@@ -16,7 +16,7 @@ void CmdShutdown(int iSignal);
 
 int CmdType();
 bool CmdLocal();
-char *CmdUsername();
+const char *CmdUsername();
 
 // Input functions
 byte CmdInputGet();

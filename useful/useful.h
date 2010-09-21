@@ -33,7 +33,7 @@ public:
    byte Char(int iPos);
    long Length();
 
-   long Append(char *szValue);
+   long Append(const char *szValue);
    long Append(byte *pValue, int iValueLen);
    long Append(int iValue);
 

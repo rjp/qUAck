@@ -49,7 +49,7 @@
 #define SIGUNUSED 31
 #endif
 
-char *m_szHome = NULL;
+const char *m_szHome = NULL;
 
 int iPanic = 0;
 
@@ -84,7 +84,7 @@ int m_iLogLevel = 0;
 
 char *m_szEditor = NULL;
 
-char *CLIENT_NAME()
+const char *CLIENT_NAME()
 {
    // if(m_szClientName == NULL)
    {
@@ -95,17 +95,17 @@ char *CLIENT_NAME()
    return m_szClientName;
 }
 
-int BuildNum()
+const int BuildNum()
 {
    return BUILDNUM;
 }
 
-char *BuildTime()
+const char *BuildTime()
 {
    return BUILDTIME;
 }
 
-char *BuildDate()
+const char *BuildDate()
 {
    return BUILDDATE;
 }
@@ -601,7 +601,7 @@ bool CmdRefreshMessages(int iFolderID, bool bIdleReset)
    m_pUser->TempUnmark();
 
    // m_pFolderList->TempMark();
-   if(FolderGet(m_pFolderList, iFolderID, NULL, false) == true)
+   if(FolderGetFromId(m_pFolderList, iFolderID, NULL, false) == true)
    {
       m_pFolderList->GetChild("accessmode", &iAccessMode);
    }
@@ -913,7 +913,8 @@ CmdInput *CmdInputLoop(int iMenuStatus, CmdInput *pInput, byte *pcInput, byte **
    long lTimeout = 0;
    bool bInternal = false, bLoop = true, bShow = true;
    int cRead = '\0';
-   char cProcess = '\0', *szType = NULL, *szReturn = NULL;
+   char cProcess = '\0', *szType = NULL;
+   const char *szReturn = NULL;
    EDF *pRead = NULL; // new EDF();
 
    // debug("CmdInputLoop entry %d %p %p\n", iMenuStatus, pcInput, pszInput);
@@ -1375,12 +1376,12 @@ bool CmdYesNo(const char *szTitle, bool bDefault)
    return (cInput == 'y' ? true : false);
 }
 
-char *CmdLineStr(const char *szTitle, int iMax, int iOptions, const char *szInit, CMDTABFUNC pTabFunc, EDF *pTabData)
+const char *CmdLineStr(const char *szTitle, int iMax, int iOptions, const char *szInit, CMDTABFUNC pTabFunc, EDF *pTabData)
 {
    return CmdLineStr(szTitle, NULL, iMax, iOptions, szInit, pTabFunc, pTabData);
 }
 
-char *CmdLineStr(const char *szTitle, const char *szExtra, int iMax, int iOptions, const char *szInit, CMDTABFUNC pTabFunc, EDF *pTabData)
+const char *CmdLineStr(const char *szTitle, const char *szExtra, int iMax, int iOptions, const char *szInit, CMDTABFUNC pTabFunc, EDF *pTabData)
 {
    STACKTRACE
    char *szInput = NULL;
@@ -1426,7 +1427,7 @@ int CmdLineName(const char *szType, const char *szTitle, CMDTABFUNC pTabFunc, ED
          }
          if(iInitID != -1)
          {
-            UserGet(pData, iInitID, &szMenu, true, -1);
+            UserGetFromId(pData, iInitID, &szMenu, true, -1);
          }
       }
       else if(stricmp(szType, "folder") == 0)
@@ -1441,7 +1442,7 @@ int CmdLineName(const char *szType, const char *szTitle, CMDTABFUNC pTabFunc, ED
          }
          if(iInitID != -1)
          {
-            FolderGet(pData, iInitID, &szMenu, true);
+            FolderGetFromId(pData, iInitID, &szMenu, true);
          }
       }
       else if(stricmp(szType, "channel") == 0)
@@ -1524,14 +1525,14 @@ int CmdLineName(const char *szType, const char *szTitle, CMDTABFUNC pTabFunc, ED
             // Lookup using numeric ID
             if(stricmp(szType, "user") == 0)
             {
-               if(UserGet(pData, iInput, NULL, true, -1) == true)
+               if(UserGetFromId(pData, iInput, NULL, true, -1) == true)
                {
                   iReturn = iInput;
                }
             }
             else if(stricmp(szType, "folder") == 0)
             {
-               if(FolderGet(pData, iInput, NULL, true) == true)
+               if(FolderGetFromId(pData, iInput, NULL, true) == true)
                {
                   iReturn = iInput;
                }
@@ -1657,7 +1658,7 @@ int CmdLineNum(int iMenuStatus)
    return iInput;
 }
 
-int CmdVersion(char *szVersion)
+int CmdVersion(const char *szVersion)
 {
    STACKTRACE
    int iReturn = 0;
@@ -1690,11 +1691,16 @@ int main(int argc, char **argv)
    int iArgNum = 0, iPort = 0, iTimeOff = -1, iBuildNum = 0, iAccessLevel = LEVEL_NONE, iFolderID = 0, iValue = 0, iSystemTime = 0, iAttachmentSize = 0;
    int iUserType = 0, iNumEdits = 0, iGiveUp = 10, iLoop = 0, iMsgMark = 0, iConfigHighlight = -1, iSubType = 0, iStatus = 0, iDebugLevel = DEBUGLEVEL_INFO;
    bool bSecure = false, bBusy = false, bSilent = false, bShadow = false, bLoop = false, bFolderCheck = true, bRetro = false, bUsePID = false, bLoggedIn = false, bMarkingField = false;
-   bool bNew = false, bBrowse = false, bBrowserWait = false;
+   bool bNew = false, bBrowserWait = false;
    double dTick = 0;
    char szWrite[200], szError[200];
-   char *szConfig = NULL, *szServer = NULL, *szUsername = NULL, *szPassword = NULL, *szDebugDir = NULL, *szReply = NULL, *szName = NULL;
-   char *szServerName = NULL, *szBuildDate = NULL, *szFolder = NULL, *szCertFile = NULL, *szBrowser = NULL, *szAttachmentDir = NULL;
+   char *szConfig = NULL;
+   char *szServer = NULL;
+   char *szUsername = NULL;
+   char *szPassword = NULL;
+   char *szDebugDir = NULL, *szReply = NULL, *szName = NULL;
+   char *szServerName = NULL;
+   char *szBuildDate = NULL, *szFolder = NULL, *szCertFile = NULL, *szBrowser = NULL, *szAttachmentDir = NULL;
    EDF *pFile = NULL, *pRequest = NULL, *pRead = NULL, *pReply = NULL, *pProxy = NULL, *pSystem = NULL;
 
 #ifdef LEAKTRACEON
@@ -1954,22 +1960,15 @@ int main(int argc, char **argv)
       }
    }
 
-#ifndef CONTROLC
-   // signal(SIGINT, SIG_IGN);
-#else
-   // signal(SIGINT, Panic);
-#endif
 
 #ifdef UNIX
    signal(SIGTSTP, SIG_IGN);
    signal(SIGCHLD, SIG_IGN);
-
-   // signal(SIGWINCH, CmdReset);
 #endif
 
    if(szServer == NULL)
    {
-      szServer = CmdLineStr("Server name", LINE_LEN, CMD_LINE_NOESCAPE);
+      szServer = (char*) CmdLineStr("Server name", LINE_LEN, CMD_LINE_NOESCAPE);
       iPort = CmdLineNum("Port number");
 #ifdef HAVE_LIBSSL
       bSecure = CmdYesNo("Use secure connection", false);
@@ -2098,7 +2097,7 @@ int main(int argc, char **argv)
       {
          do
          {
-            szUsername = CmdLineStr("Enter your username, NEW, GUEST or OFF", UA_NAME_LEN, CMD_LINE_NOESCAPE);
+            szUsername = (char*) CmdLineStr("Enter your username, NEW, GUEST or OFF", UA_NAME_LEN, CMD_LINE_NOESCAPE);
             if(stricmp(szUsername, "off") == 0)
             {
                CmdShutdown("Goodbye then");
@@ -2106,7 +2105,8 @@ int main(int argc, char **argv)
             else if(stricmp(szUsername, "new") == 0)
             {
                delete[] szUsername;
-               CreateUserMenu(false, &szUsername, &szPassword);//, pSystemList);
+               szUsername = NULL;
+               CreateUserMenu(&szUsername, &szPassword);
 
                bNew = true;
             }
@@ -2124,7 +2124,7 @@ int main(int argc, char **argv)
       if(iUserType == 0 && szPassword == NULL)
       {
          // debug("getting password\n");
-         szPassword = CmdLineStr("Enter your password", UA_NAME_LEN, CMD_LINE_SILENT | CMD_LINE_NOESCAPE);
+         szPassword = (char*) CmdLineStr("Enter your password", UA_NAME_LEN, CMD_LINE_SILENT | CMD_LINE_NOESCAPE);
       }
 
       pRequest = new EDF();

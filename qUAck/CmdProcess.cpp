@@ -83,7 +83,7 @@ bool CmdAnnounceProcess(EDF *pAnnounce)
 
       if(szTemp != NULL)
       {
-         if(FolderGet(m_pFolderList, iFolderID, &szFolderName, false) == true)
+         if(FolderGetFromId(m_pFolderList, iFolderID, &szFolderName, false) == true)
          {
             if(strcmp(szTemp, szFolderName) != 0)
             {
@@ -115,7 +115,7 @@ bool CmdAnnounceProcess(EDF *pAnnounce)
       pAnnounce->GetChild("marked", &iMarked);
       debug("CmdAnnounceProcess %s %d in %d by %d reply to %d (marked %d)\n", szAnnounce, iMessageID, iFolderID, iFromID, iReplyID, iMarked);
 
-      if(FolderGet(m_pFolderList, iFolderID, NULL, false) == true)
+      if(FolderGetFromId(m_pFolderList, iFolderID, NULL, false) == true)
       {
          // pAnnounce->GetChild("marked", &iMarked);
          // debug("CmdAnnounceProcess %s message marked %d\n", szAnnounce, iMarked);
@@ -206,14 +206,14 @@ bool CmdAnnounceProcess(EDF *pAnnounce)
    else if(stricmp(szAnnounce, MSG_MESSAGE_DELETE) == 0 || stricmp(szAnnounce, MSG_MESSAGE_MOVE) == 0)
    {
       pAnnounce->GetChild("folderid", &iFolderID);
-      if(FolderGet(m_pFolderList, iFolderID, NULL, false) == true)
+      if(FolderGetFromId(m_pFolderList, iFolderID, NULL, false) == true)
       {
          m_pFolderList->GetChild("unread", &iFolderUnread);
       }
       if(stricmp(szAnnounce, MSG_MESSAGE_MOVE) == 0)
       {
          pAnnounce->GetChild("moveid", &iMoveID);
-         if(FolderGet(m_pFolderList, iMoveID, NULL, false) == true)
+         if(FolderGetFromId(m_pFolderList, iMoveID, NULL, false) == true)
          {
             m_pFolderList->GetChild("unread", &iMoveUnread);
          }
@@ -262,7 +262,7 @@ bool CmdAnnounceProcess(EDF *pAnnounce)
 
       pAnnounce->GetChild("userid", &iUserID);
 
-      if(UserGet(m_pUserList, iUserID, NULL, false) == true)
+      if(UserGetFromId(m_pUserList, iUserID, NULL, false) == true)
       {
          if(pAnnounce->GetChild("status", &iStatus) == true)
          {
@@ -347,11 +347,10 @@ void CmdExtraVote(EDF *pRequest)
 {
    STACKTRACE
    bool bLoop = true;
-   char *szValue = NULL;
 
    while(bLoop == true)
    {
-      szValue = CmdLineStr("Vote", "RETURN to end", LINE_LEN, 0, NULL, NULL, NULL);
+      const char *szValue = CmdLineStr("Vote", "RETURN to end", LINE_LEN, 0, NULL, NULL, NULL);
       if(szValue != NULL && strlen(szValue) > 0)
       {
          pRequest->AddChild("vote", szValue);
@@ -369,11 +368,10 @@ void CmdExtraAttachment(EDF *pRequest)
    STACKTRACE
    size_t tDataLen = 0;
    char szWrite[200];
-   char *szValue = NULL, *szFilename = NULL;
    byte *pData = NULL;
    bytes *pBytes = NULL;
 
-   szValue = CmdLineStr("URL / Filename", "RETURN to abort", LINE_LEN);
+   const char *szValue = CmdLineStr("URL / Filename", "RETURN to abort", LINE_LEN);
    if(szValue != NULL && strlen(szValue) > 0)
    {
       if(strstr(szValue, "://") != 0)
@@ -389,7 +387,7 @@ void CmdExtraAttachment(EDF *pRequest)
          {
             pRequest->Add("attachment");
 
-            szFilename = szValue + strlen(szValue);
+            char *szFilename = ((char*)szValue)+strlen(szValue);
             while(szFilename > szValue && (*szFilename) != CmdDirSep())
             {
                szFilename--;
@@ -512,8 +510,8 @@ bool CmdMessageAddFields(EDF *pRequest)
    int iFolderID = -1, iMsgType = 0, iToID = -1, iVoteEDF = 0, iDefTo = -1;
    int iMinValue = -1, iMaxValue = -1;
 	double dMinValue = 0, dMaxValue = 0;
-   char cVoteType = 'a', cVoteValues = 'f';
-   char *szOption = NULL, *szSubject = NULL, *szToName = NULL, *szUser = NULL;
+   char cVoteValues = 'f';
+   char *szSubject = NULL, *szToName = NULL, *szUser = NULL;
    CmdInput *pInput = NULL;
    char cOption = '\0', cDefault = '\0';
 
@@ -555,7 +553,7 @@ bool CmdMessageAddFields(EDF *pRequest)
       m_pUser->TempUnmark();
 
       m_pFolderList->TempMark();
-      FolderGet(m_pFolderList, iFolderID, NULL, false);
+      FolderGetFromId(m_pFolderList, iFolderID, NULL, false);
       m_pFolderList->GetChild("subtype", &iSubType);
       m_pFolderList->GetChild("accessmode", &iFolderMode);
       m_pFolderList->TempUnmark();
@@ -578,22 +576,26 @@ bool CmdMessageAddFields(EDF *pRequest)
 
       if(mask(iFolderMode, ACCMODE_PRIVATE) == true)
       {
+         char *szOption = NULL;
          iToID = CmdLineUser(CmdUserTab, iToID, &szOption, true, NULL, szToName);
 
          if(iToID == -1)
          {
             if(szOption != NULL && szToName != NULL && strcmp(szOption, szToName) == 0)
             {
+               delete[] szOption;
                iToID = iDefTo;
             }
             else
             {
+               delete[] szOption;
                return false;
             }
          }
       }
       else if(iMsgType == 0)
       {
+         char *szOption = NULL;
          debug("CmdMessageAddFields params %d %s\n", iToID, szToName);
          iToID = CmdLineUser(CmdUserTab, -1, &szOption, false, "for everyone", szToName);
          debug("CmdMessageAddFields result %d %s\n", iToID, szOption);
@@ -611,14 +613,18 @@ bool CmdMessageAddFields(EDF *pRequest)
       }
    }
 
-   szOption = CmdLineStr("Subject", LINE_LEN, 0, szSubject);
-   delete[] szSubject;
-   if(szOption == NULL || strcmp(szOption, "") == 0)
+
    {
-      return false;
+      const char *szOption = CmdLineStr("Subject", LINE_LEN, 0, szSubject);
+      delete[] szSubject;
+      if(szOption == NULL || strcmp(szOption, "") == 0)
+      {
+         delete[] szOption;
+         return false;
+      }
+      pRequest->SetChild("subject", szOption);
+      delete[] szOption;
    }
-   pRequest->SetChild("subject", szOption);
-   delete[] szOption;
 
    if(iMsgType == MSGTYPE_VOTE)
    {
@@ -679,41 +685,49 @@ bool CmdMessageAddFields(EDF *pRequest)
                   case 'i':
                      iVoteType += VOTE_INTVALUES;
 
-                     szOption = CmdLineStr("Minimum value", "RETURN for none");
-                     if(szOption != NULL && strlen(szOption) > 0)
                      {
-                        bMinValue = true;
-                        iMinValue = atoi(szOption);
+                        const char *szOption = CmdLineStr("Minimum value", "RETURN for none");
+                        if(szOption != NULL && strlen(szOption) > 0)
+                        {
+                           bMinValue = true;
+                           iMinValue = atoi(szOption);
+                        }
+                        delete[] szOption;
                      }
-                     delete[] szOption;
 
-                     szOption = CmdLineStr("Maximum value", "RETURN for none");
-                     if(szOption != NULL && strlen(szOption) > 0)
                      {
-                        bMaxValue = true;
-                        iMaxValue = atoi(szOption);
+                        const char *szOption = CmdLineStr("Maximum value", "RETURN for none");
+                        if(szOption != NULL && strlen(szOption) > 0)
+                        {
+                           bMaxValue = true;
+                           iMaxValue = atoi(szOption);
+                        }
+                        delete[] szOption;
                      }
-                     delete[] szOption;
                      break;
 
                   case 'f':
                      iVoteType += VOTE_FLOATVALUES;
 
-                     szOption = CmdLineStr("Minimum value", "RETURN for none");
-                     if(szOption != NULL && strlen(szOption) > 0)
                      {
-                        bMinValue = true;
-                        dMinValue = atof(szOption);
+                        const char *szOption = CmdLineStr("Minimum value", "RETURN for none");
+                        if(szOption != NULL && strlen(szOption) > 0)
+                        {
+                           bMinValue = true;
+                           dMinValue = atof(szOption);
+                        }
+                        delete[] szOption;
                      }
-                     delete[] szOption;
 
-                     szOption = CmdLineStr("Maximum value", "RETURN for none");
-                     if(szOption != NULL && strlen(szOption) > 0)
                      {
-                        bMaxValue = true;
-                        dMaxValue = atof(szOption);
+                        const char *szOption = CmdLineStr("Maximum value", "RETURN for none");
+                        if(szOption != NULL && strlen(szOption) > 0)
+                        {
+                           bMaxValue = true;
+                           dMaxValue = atof(szOption);
+                        }
+                        delete[] szOption;
                      }
-                     delete[] szOption;
                      break;
 
                   case 'p':
@@ -869,7 +883,7 @@ bool CmdMessageAddFields(EDF *pRequest)
    if(iToID != -1)
    {
       pRequest->SetChild("toid", iToID);
-      if(szToName != NULL && UserGet(m_pUserList, iToID, &szUser) == true)
+      if(szToName != NULL && UserGetFromId(m_pUserList, iToID, &szUser) == true)
 		{
 			debug("CmdMessageAddFields to check %d '%s' -vs- '%s'\n", iToID, szToName, szUser);
 
@@ -1059,7 +1073,7 @@ bool CmdMessageGoto(int *iMsgPos, bool bShowOnly)
       }
       else
       {
-         bLoop = FolderGet(m_pFolderNav, m_iFolderID, NULL, false);
+         bLoop = FolderGetFromId(m_pFolderNav, m_iFolderID, NULL, false);
          if(*iMsgPos == MSG_NEWFOLDER)
          {
             bNewFolder = true;
@@ -1074,7 +1088,7 @@ bool CmdMessageGoto(int *iMsgPos, bool bShowOnly)
       {
          // debugEDFPrint("CmdMessageGoto nav folder point", m_pFolderNav, EDFElement::EL_CURR | EDFElement::PR_SPACE);
          m_pFolderNav->Get(NULL, &iFolderNav);
-         FolderGet(m_pFolderList, iFolderNav, NULL, false);
+         FolderGetFromId(m_pFolderList, iFolderNav, NULL, false);
 
          iSubType = 0;
          m_pFolderList->GetChild("subtype", &iSubType);
@@ -1446,7 +1460,7 @@ char CmdUserPageTo(bool bReply, EDF *pReply, int iToID, bool bRetro, int iAccess
 
       delete[] szReply;
    }
-   else if(UserGet(m_pUserList, iToID, &szFromName, false) == true)
+   else if(UserGetFromId(m_pUserList, iToID, &szFromName, false) == true)
    {
       // CmdEDFPrint("CmdUserPageTo user", m_pUserList, EDFElement::EL_CURR | EDFElement::PR_SPACE);
 
@@ -1699,8 +1713,8 @@ bool CmdUserPage(EDF *pAnnounce, int iFromID, bool bCustomTo, const char *szToNa
    int iAccessLevel = LEVEL_NONE, iConfirm = 0, iRetro = 0, iToID = -1, iToEDF = -1, iMessageID = -1, iFailed = 0, iServiceID = -1, iServiceType = 0;
    long iContactID = -1;
    bool bLoop = false, bFound = false; //, bMessage = true;
-   char *szFromName = NULL, *szText = NULL, *szMessage = NULL, *szFilename = NULL, *szUser = NULL;
-   char *szServiceUser = NULL, *szServicePassword = NULL;
+   char *szFromName = NULL, *szText = NULL, *szMessage = NULL, *szFilename = NULL;
+   const char *szUser = NULL;
    char cOption = '\0';
    char szWrite[100];
    EDF *pRequest = NULL, *pReply = NULL;
@@ -1785,10 +1799,10 @@ bool CmdUserPage(EDF *pAnnounce, int iFromID, bool bCustomTo, const char *szToNa
             {
                CmdWrite("Service requires login\n");
 
-               szServiceUser = CmdLineStr("Username");
+               const char *szServiceUser = CmdLineStr("Username");
                if(szServiceUser != NULL)
                {
-                  szServicePassword = CmdLineStr("Password", LINE_LEN, CMD_LINE_SILENT);
+                  const char *szServicePassword = CmdLineStr("Password", LINE_LEN, CMD_LINE_SILENT);
                   if(szServicePassword != NULL)
                   {
                      pRequest = new EDF();
@@ -2132,7 +2146,7 @@ int CmdFolderJoin(int iFolderID, const char *szPrompt, bool bView)
    EDF *pRequest = NULL, *pReply = NULL;
    CmdInput *pInput = NULL;
 
-   if(FolderGet(m_pFolderList, iFolderID) == false)
+   if(FolderGetFromId(m_pFolderList, iFolderID) == false)
    {
       return 0;
    }
@@ -2216,7 +2230,7 @@ bool CmdFolderLeave(int iFolderID)
 	debug("CmdFolderLeave entry %d\n", iFolderID);
 
    // iSubType = CmdFolderSubType(iFolderID, false);
-   FolderGet(m_pFolderList, iFolderID, NULL, false);
+   FolderGetFromId(m_pFolderList, iFolderID, NULL, false);
    m_pFolderList->GetChild("subtype", &iSubType);
    if(iSubType > 0)
    {
@@ -2272,7 +2286,7 @@ bool CmdMessageMark(int iFolderID, const char *szFolderName, int iMessageID)
 
    if(iFolderID != -1)
    {
-      if(FolderGet(m_pFolderList, iFolderID) == false)
+      if(FolderGetFromId(m_pFolderList, iFolderID) == false)
       {
          return false;
       }
@@ -2313,7 +2327,7 @@ bool CmdChannelLeave()
    STACKTRACE
    int iSubType = 0;
    bool bReturn = false;
-   char *szRequest = NULL;
+   const char *szRequest = NULL;
    EDF *pRequest = NULL, *pReply = NULL;
 
    if(ChannelGet(m_pChannelList, m_iChannelID) == false)

@@ -36,7 +36,6 @@
 #include "client/CliUser.h"
 
 #include "qUAck.h"
-#include "GameFactory.h"
 
 // char *m_szBrowser = NULL;
 // bool m_bBrowserWait = false;
@@ -45,11 +44,10 @@ char *m_szAttachmentDir = NULL;
 
 int /*m_iPrevFolder = -1, */ m_iMsgPos = MSG_EXIT, m_iFromID = -1;
 
-Game *g_pGame = NULL;
 
 bool FolderEditMenu(int iEditID);
 void DefaultWholist();
-char *EDFToMatchOp(EDF *pEDF, char *szOp, bool bNot, int iIndent);
+char *EDFToMatchOp(EDF *pEDF, const char *szOp, bool bNot, int iIndent);
 
 bool CmdTabReset(EDF *pData, int iType)
 {
@@ -258,7 +256,7 @@ char *CmdServiceTab(EDF *pData, const char *szData, int iDataPos, bool bFull, in
    return CmdTab(6, pData, szData, iDataPos, bFull, iTabValue);
 }
 
-void MatchAdd(EDF *pEDF, bool *bNot, char *szCommand, char *szValue)
+void MatchAdd(EDF *pEDF, bool *bNot, const char *szCommand, const char *szValue)
 {
    STACKTRACE
    int iValue = 0;
@@ -285,7 +283,7 @@ void MatchAdd(EDF *pEDF, bool *bNot, char *szCommand, char *szValue)
 
       if(stricmp(szCommand, "folder") == 0)
       {
-         iValue = FolderGet(m_pFolderList, szValue, true);
+         iValue = FolderGetFromName(m_pFolderList, szValue, true);
          if(iValue > 0)
          {
             pEDF->AddChild("folderid", iValue);
@@ -297,7 +295,7 @@ void MatchAdd(EDF *pEDF, bool *bNot, char *szCommand, char *szValue)
       }
       else if(stricmp(szCommand, "from") == 0 || stricmp(szCommand, "to") == 0 || stricmp(szCommand, "user") == 0)
       {
-         iValue = UserGet(m_pUserList, szValue, true);
+         iValue = UserGetFromName(m_pUserList, szValue, true);
          if(iValue > 0)
          {
             if(stricmp(szCommand, "user") == 0)
@@ -560,7 +558,7 @@ char *EDFToMatch(EDF *pEDF, int iIndent)
 
    if(stricmp(szName, "folderid") == 0)
    {
-      if(FolderGet(m_pFolderList, lValue, &szFolder, true) == true)
+      if(FolderGetFromId(m_pFolderList, lValue, &szFolder, true) == true)
       {
          sprintf(szField, "folder:%s%s%s", strchr(szFolder, ' ') != NULL ? "\"" : "", szFolder, strchr(szFolder, ' ') != NULL ? "\"" : "");
          delete[] szFolder;
@@ -568,7 +566,7 @@ char *EDFToMatch(EDF *pEDF, int iIndent)
    }
    else if(stricmp(szName, "fromid") == 0)
    {
-      if(UserGet(m_pUserList, lValue, &szUser, true) == true)
+      if(UserGetFromId(m_pUserList, lValue, &szUser, true) == true)
       {
          sprintf(szField, "from:%s%s%s", strchr(szUser, ' ') != NULL ? "\"" : "", szUser, strchr(szUser, ' ') != NULL ? "\"" : "");
          delete[] szUser;
@@ -576,7 +574,7 @@ char *EDFToMatch(EDF *pEDF, int iIndent)
    }
    else if(stricmp(szName, "toid") == 0)
    {
-      if(UserGet(m_pUserList, lValue, &szUser, true) == true)
+      if(UserGetFromId(m_pUserList, lValue, &szUser, true) == true)
       {
          sprintf(szField, "to:%s%s%s", strchr(szUser, ' ') != NULL ? "\"" : "", szUser, strchr(szUser, ' ') != NULL ? "\"" : "");
          delete[] szUser;
@@ -608,7 +606,7 @@ char *EDFToMatch(EDF *pEDF, int iIndent)
    return szReturn;
 }
 
-char *EDFToMatchOp(EDF *pEDF, char *szOp, bool bNot, int iIndent)
+char *EDFToMatchOp(EDF *pEDF, const char *szOp, bool bNot, int iIndent)
 {
    STACKTRACE
    bool bLoop = false;
@@ -1590,7 +1588,7 @@ int CmdAnnounceShow(EDF *pAnnounce, const char *szReturn)
                debugEDFPrint("CmdAnnounceShow subscription request", pRequest);
                if(CmdRequest(MSG_FOLDER_SUBSCRIBE, pRequest, &pReply) == true)
                {
-                  if(FolderGet(m_pFolderList, iValue) == true)
+                  if(FolderGetFromId(m_pFolderList, iValue) == true)
                   {
                      m_pFolderList->SetChild("subtype", SUBTYPE_SUB);
                   }
@@ -1726,7 +1724,7 @@ int CmdAnnounceShow(EDF *pAnnounce, const char *szReturn)
          pAnnounce->GetChild("marked", &iMarked);
 
          m_pFolderList->TempMark();
-         if(FolderGet(m_pFolderList, iFolderID, NULL, false) == true)
+         if(FolderGetFromId(m_pFolderList, iFolderID, NULL, false) == true)
          {
             m_pFolderList->GetChild("accessmode", &iAccessMode);
          }
@@ -1744,7 +1742,7 @@ int CmdAnnounceShow(EDF *pAnnounce, const char *szReturn)
             if(CmdRequest(MSG_MESSAGE_LIST, pRequest, &pReply) == true)
             {
                m_pFolderList->TempMark();
-               if(FolderGet(m_pFolderList, iFolderID, NULL, false) == true)
+               if(FolderGetFromId(m_pFolderList, iFolderID, NULL, false) == true)
                {
                   m_pFolderList->GetChild("unread", &iUnread);
                   if(iUnread > 0)
@@ -2371,7 +2369,6 @@ CmdInput *CmdInputSetup(int iStatus)
    int iNumFolders = 0, iRetro = 0, iToID = 0, iFromID = -1;
    bool bLoop = false, bDevOption = false, bRetro = false, bBrowse = false, bOldMenus = false, bAnnotated = false, bContent = false;//, bVoted = false;
    char *szFolderName = NULL;//, *szText = NULL;
-   EDF *pOptions = NULL;
    CmdInput *pInput = NULL;
 
    m_pUser->Root();
@@ -2416,7 +2413,7 @@ CmdInput *CmdInputSetup(int iStatus)
 
          // iSubType = CmdFolderSubType(CmdCurrFolder());
 
-         FolderGet(m_pFolderList, CmdCurrFolder(), &szFolderName, false);
+         FolderGetFromId(m_pFolderList, CmdCurrFolder(), &szFolderName, false);
          m_pFolderList->GetChild("subtype", &iSubType);
          m_pFolderList->GetChild("accessmode", &iFolderMode);
          m_pFolderList->GetChild("unread", &iNumUnread);
@@ -2543,41 +2540,7 @@ CmdInput *CmdInputSetup(int iStatus)
          break;
 
       case GAME:
-         pInput = new CmdInput(CMD_MENU_TIME, "Game");
-
-         if(g_pGame != NULL)
-         {
-            if(g_pGame->IsRunning() == true)
-            {
-               g_pGame->Loop();
-
-               pOptions = g_pGame->KeyOptions();
-
-               bLoop = pOptions->Child("key");
-               while(bLoop == true)
-               {
-                  bLoop = pOptions->Next("key");
-                  if(bLoop == false)
-                  {
-                     pOptions->Parent();
-                  }
-               }
-
-               delete pOptions;
-            }
-            else if(g_pGame->IsCreator() == true)
-            {
-               pInput->MenuAdd('s', "Start game");
-               pInput->MenuAdd('e', "End game");
-            }
-            pInput->MenuAdd('x', "eXit");
-         }
-         else
-         {
-            pInput->MenuAdd('c', "Create game");
-            pInput->MenuAdd('j', "Join game");
-            pInput->MenuAdd('x', "eXit");
-         }
+         // SGD - removed, it was never anything anyway!
          break;
    }
 
@@ -2833,9 +2796,8 @@ char *URLToken(char **szString)
 
 int CmdURLList(const char *szString, int iContentNum, bool bDisplay, int iItemNum, char **szReturn)
 {
-   bool bSlash = false;
-   int iURLBack = 0, iAddressLen = 0;
-   char *szURL = NULL, *szHTTP = NULL, *szWWW = NULL, *szAddress = NULL;
+   int iAddressLen = 0;
+   char *szURL = NULL, *szAddress = NULL;
 
    /* if(szString == NULL)
    {
@@ -3077,7 +3039,7 @@ bool CmdMessageRequest(int iFolderID, int iMessageID, bool bShowOnly, bool bPage
       m_pUser->Root();
 
       m_pFolderList->TempMark();
-      if(FolderGet(m_pFolderList, iFolderID, NULL, false) == true)
+      if(FolderGetFromId(m_pFolderList, iFolderID, NULL, false) == true)
       {
          m_pFolderList->GetChild("accessmode", &iAccessMode);
          // debug("CmdMessageRequest folder mode %d\n", iAccessMode);
@@ -3181,7 +3143,7 @@ int MessageSearchMenu(int iFolderID, int iUserID, bool bFreeForm)
    int iListType = 0, iFolderEDF = -1, iMessageID = -1, iNumMsgs = 0, iColourLen = 0, iSearchType = 1;
    bool bRequest = true, bLoop = true, bDetails = false, bReply = false, bCrossFolder = false;
    char cOption = '\0';
-   char *szKeyword = NULL, *szFolderName = NULL, *szFromName = NULL, *szToName = NULL, *szSubject = NULL, *szMessageFolder = NULL;
+   char *szFolderName = NULL, *szFromName = NULL, *szToName = NULL, *szSubject = NULL, *szMessageFolder = NULL;
    char *szMatch = NULL;
    char szWrite[200];
    EDF *pRequest = NULL, *pReply = NULL, *pMessage = NULL, *pMatch = NULL;
@@ -3278,10 +3240,6 @@ int MessageSearchMenu(int iFolderID, int iUserID, bool bFreeForm)
             case 'f':
             case 't':
                iListType = 1;
-               /* if(iUserID != -1)
-               {
-                  UserGet(m_pUserList, iUserID, &szUser);
-               } */
                iUserID = CmdLineUser(CmdUserTab, iUserID);
                if(iUserID != -1)
                {
@@ -3311,24 +3269,26 @@ int MessageSearchMenu(int iFolderID, int iUserID, bool bFreeForm)
                break;
 
             case 'k':
-               iListType = 1;
-               szKeyword = CmdLineStr("Keyword to search for", LINE_LEN);
-               if(szKeyword != NULL && strcmp(szKeyword, "") != 0)
                {
-                  pRequest->SetChild("keyword", szKeyword);
-               }
-               else
-               {
-                  if(iFolderID != -1)
+                  iListType = 1;
+                  const char *szKeyword = CmdLineStr("Keyword to search for", LINE_LEN);
+                  if(szKeyword != NULL && strcmp(szKeyword, "") != 0)
                   {
-                     bRequest = false;
+                     pRequest->SetChild("keyword", szKeyword);
                   }
                   else
                   {
-                     pRequest->DeleteChild("keyword");
+                     if(iFolderID != -1)
+                     {
+                        bRequest = false;
+                     }
+                     else
+                     {
+                        pRequest->DeleteChild("keyword");
+                     }
                   }
+                  delete[] szKeyword;
                }
-               delete[] szKeyword;
                break;
 
             case 'l':
@@ -3664,14 +3624,14 @@ bool MessageDeleteMenu(int iFolderID, int iMessageID, int iMessageTop, bool bAtt
    int iType = 0, iAccessLevel = LEVEL_NONE, iSubType = 0, iAttachmentID = -1;
    bool bReturn = false, bCrossFolder = false;
    char cOption = '\0';
-   char *szRequest = MSG_MESSAGE_DELETE;
+   const char *szRequest = MSG_MESSAGE_DELETE;
    EDF *pRequest = NULL, *pReply = NULL;
    CmdInput *pInput = NULL;
 
    m_pUser->Root();
    m_pUser->GetChild("accesslevel", &iAccessLevel);
    // iSubType = CmdFolderSubType(CmdCurrFolder());
-   FolderGet(m_pFolderList, iFolderID, NULL, false);
+   FolderGetFromId(m_pFolderList, iFolderID, NULL, false);
    m_pFolderList->GetChild("subtype", &iSubType);
 
    pInput = new CmdInput(0, "Kill");
@@ -3760,7 +3720,7 @@ bool MessageMarkMenu(bool bAdd, int iFolderID, int iMessageID, int iFromID, cons
    bool bLoop = false, bRefresh = false, bMarkKeep = false;
    char cOption = '\0';
    char szWrite[100];
-   char *szValue = NULL, *szOption = NULL, *szFolderName = NULL;
+   char *szValue = NULL, *szFolderName = NULL;
    EDF *pRequest = NULL, *pReply = NULL;
    CmdInput *pInput = NULL;
    struct tm *tmTime = NULL;
@@ -4027,7 +3987,7 @@ bool MessageMarkMenu(bool bAdd, int iFolderID, int iMessageID, int iFromID, cons
             CmdEDFPrint("MessageMarkMenu hold reply", pReply);
          } */
 
-         FolderGet(m_pFolderList, iFolderID, NULL, false);
+         FolderGetFromId(m_pFolderList, iFolderID, NULL, false);
          // if(iMarkType == 2)
          if(iMessageID == -1 && cOption != 's')
          {
@@ -4087,7 +4047,7 @@ bool MessageMarkMenu(bool bAdd, int iFolderID, int iMessageID, int iFromID, cons
                      pReply->GetChild("foldername", &szFolderName);
 
                      m_pFolderList->TempMark();
-                     if(FolderGet(m_pFolderList, iFolderMessage) == true)
+                     if(FolderGetFromId(m_pFolderList, iFolderMessage) == true)
                      {
                         m_pFolderList->GetChild("unread", &iFolderUnread);
                         if(bAdd == true)
@@ -4144,7 +4104,7 @@ bool MessageMarkMenu(bool bAdd, int iFolderID, int iMessageID, int iFromID, cons
       }
       else
       {
-         szOption = CmdLineStr("Really perform catch-up", "YES to proceed");
+         const char *szOption = CmdLineStr("Really perform catch-up", "YES to proceed");
          if(szOption != NULL && stricmp(szOption, "YES") == 0)
          {
             m_pFolderList->Root();
@@ -4206,7 +4166,7 @@ void ContentMenu(EDF *pEDF, const char *szType, int iID)
    STACKTRACE
    int iOption = 0, iItemNum = 0, iAttachmentID = -1, iWritten = 0;
    char szWrite[100];
-   char *szURL = NULL, *szURI = NULL, *szAttachmentName = NULL, *szFilename = NULL, *szFullPath = NULL;
+   char *szURL = NULL, *szURI = NULL, *szAttachmentName = NULL, *szFullPath = NULL;
    bytes *pData = NULL;
    EDF *pRequest = NULL, *pReply = NULL;
 
@@ -4273,7 +4233,7 @@ void ContentMenu(EDF *pEDF, const char *szType, int iID)
          szFullPath = strmk(szAttachmentName);
       }
 
-      szFilename = CmdLineStr("Filename", LINE_LEN, 0, szFullPath);
+      const char *szFilename = CmdLineStr("Filename", LINE_LEN, 0, szFullPath);
       if(szFilename != NULL)
       {
          if(pData == NULL)
@@ -4431,10 +4391,10 @@ void FolderMenu(int iFolderID, int iMessageID, int iMsgPos)
 {
    STACKTRACE
    int iUserID = 0, iAccessLevel = LEVEL_NONE, iInitPos = 0, iVoteType = 0, iFromID = -1, iVoteID = 0;
-   int iAccessMode = FOLDERMODE_NORMAL, iStatus = LOGIN_OFF, iRetro = 0, iConfirm = 0, iMessageTop = 0, iValue = 0;
+   int iAccessMode = FOLDERMODE_NORMAL, iStatus = LOGIN_OFF, iRetro = 0, iConfirm = 0, iMessageTop = 0;
    bool bLoop = true, bAction = false, bRetro = false, bOldMenus = false, bValid = false;
    char cOption = '\0', szWrite[100], szFilename[100];
-   char *szFolderName = NULL, *szOption = NULL, *szValue = NULL, *szUsername = NULL, *szFromName = NULL, *szSubject = NULL;
+   char *szFolderName = NULL, *szValue = NULL, *szUsername = NULL, *szFromName = NULL, *szSubject = NULL;
    EDF *pRequest = NULL, *pReply = NULL;
 
    m_pUser->Get(NULL, &iUserID);
@@ -4500,33 +4460,35 @@ void FolderMenu(int iFolderID, int iMessageID, int iMsgPos)
             break;
 
          case 'd':
-            szOption = CmdLineStr("Note", "RETURN to abort");
-            if(szOption != NULL && strcmp(szOption, "") != 0)
             {
-               pRequest = new EDF();
-               if(CmdVersion("2.5") < 0)
+               const char *szOption = CmdLineStr("Note", "RETURN to abort");
+               if(szOption != NULL && strcmp(szOption, "") != 0)
                {
-                  pRequest->AddChild("folderid", CmdCurrFolder());
+                  pRequest = new EDF();
+                  if(CmdVersion("2.5") < 0)
+                  {
+                     pRequest->AddChild("folderid", CmdCurrFolder());
+                  }
+                  pRequest->AddChild("messageid", CmdCurrMessage());
+                  if(CmdVersion("2.5") >= 0)
+                  {
+                     pRequest->Add("attachment", "add");
+                     pRequest->AddChild("content-type", MSGATT_ANNOTATION);
+                     pRequest->AddChild("text", szOption);
+                     pRequest->Parent();
+                  }
+                  else
+                  {
+                     pRequest->AddChild("note", szOption);
+                  }
+                  if(CmdRequest(MSG_MESSAGE_EDIT, pRequest, &pReply) == false)
+                  {
+                     CmdEDFPrint("FolderMenu annotation failed", pReply);
+                  }
+                  delete pReply;
                }
-               pRequest->AddChild("messageid", CmdCurrMessage());
-               if(CmdVersion("2.5") >= 0)
-               {
-                  pRequest->Add("attachment", "add");
-                  pRequest->AddChild("content-type", MSGATT_ANNOTATION);
-                  pRequest->AddChild("text", szOption);
-                  pRequest->Parent();
-               }
-               else
-               {
-                  pRequest->AddChild("note", szOption);
-               }
-               if(CmdRequest(MSG_MESSAGE_EDIT, pRequest, &pReply) == false)
-               {
-                  CmdEDFPrint("FolderMenu annotation failed", pReply);
-               }
-               delete pReply;
+               delete[] szOption;
             }
-            delete[] szOption;
             break;
 
          case 'e':
@@ -4548,7 +4510,7 @@ void FolderMenu(int iFolderID, int iMessageID, int iMsgPos)
          case 'g':
             if(bOldMenus == true)
             {
-               szOption = CmdLineStr("Which message number", "./#/' for first/last/end, RETURN to abort", NUMBER_LEN);
+               const char *szOption = CmdLineStr("Which message number", "./#/' for first/last/end, RETURN to abort", NUMBER_LEN);
                if(szOption != NULL)
                {
                   if(stricmp(szOption, ".") == 0)
@@ -4718,11 +4680,11 @@ void FolderMenu(int iFolderID, int iMessageID, int iMsgPos)
                bAction = false;
                iFolderID = CmdCurrFolder();
 
-               FolderGet(m_pFolderList, CmdCurrFolder());
+               FolderGetFromId(m_pFolderList, CmdCurrFolder());
                m_pFolderList->GetChild("replyid", &iFolderID);
                /* if(iReplyID != -1)
                {
-                  FolderGet(m_pFolderList, iReplyID);
+                  FolderGetFromId(m_pFolderList, iReplyID);
                }
                else
                {
@@ -4740,7 +4702,7 @@ void FolderMenu(int iFolderID, int iMessageID, int iMsgPos)
 
                if(mask(iAccessMode, ACCMODE_PRIVATE) == true)
                {
-                  UserGet(m_pUserList, iFromID, &szUsername, false);
+                  UserGetFromId(m_pUserList, iFromID, &szUsername, false);
                   m_pUserList->GetChild("status", &iStatus);
 
                   m_pUser->Root();
@@ -4806,78 +4768,72 @@ void FolderMenu(int iFolderID, int iMessageID, int iMsgPos)
             break;
 
          case 'v':
-            if(CmdVersion("2.5") >= 0)
             {
-               if(m_pMessageView->Child("votes") == true)
+               if(CmdVersion("2.5") >= 0)
                {
-                  m_pMessageView->GetChild("votetype", &iVoteType);
-                  m_pMessageView->Parent();
-               }
-
-               /* if(mask(iVoteType, VOTE_CHOICE) == true)
-               {
-                  if(CmdYesNo("Vote anonymously", true) == false)
+                  if(m_pMessageView->Child("votes") == true)
                   {
-                     pRequest->AddChild("votetype", VOTE_NAMED);
+                     m_pMessageView->GetChild("votetype", &iVoteType);
+                     m_pMessageView->Parent();
                   }
-               } */
-            }
-
-            szOption = NULL;
-            bValid = false;
-            if(IS_VALUE_VOTE(iVoteType) == true)
-            {
-               szOption = CmdLineStr("Vote value");
-               if(szOption != NULL && strcmp(szOption, "") != 0)
-               {
-                  bValid = true;
                }
-            }
-            else
-            {
-               iVoteID = CmdLineNum("Vote ID", 0, -1);
-               if(iVoteID > 0)
+   
+               const char *szOption = NULL;
+               bValid = false;
+               if(IS_VALUE_VOTE(iVoteType) == true)
                {
-                  bValid = true;
+                  szOption = CmdLineStr("Vote value");
+                  if(szOption != NULL && strcmp(szOption, "") != 0)
+                  {
+                     bValid = true;
+                  }
                }
                else
                {
-                  CmdWrite("Invalid number\n");
+                  iVoteID = CmdLineNum("Vote ID", 0, -1);
+                  if(iVoteID > 0)
+                  {
+                     bValid = true;
+                  }
+                  else
+                  {
+                     CmdWrite("Invalid number\n");
+                  }
                }
+   
+               if(bValid == true)
+               {
+                  pRequest = new EDF();
+                  if(CmdVersion("2.5") < 0)
+                  {
+                     pRequest->AddChild("folderid", CmdCurrFolder());
+                  }
+                  pRequest->AddChild("messageid", CmdCurrMessage());
+                  if(IS_INT_VOTE(iVoteType) == true)
+                  {
+                     pRequest->AddChild("votevalue", atoi(szOption));
+                  }
+                  else if(IS_FLOAT_VOTE(iVoteType) == true)
+                  {
+                     pRequest->AddChild("votevalue", atof(szOption));
+                  }
+                  else if(mask(iVoteType, VOTE_STRVALUES) == true)
+                  {
+                     pRequest->AddChild("votevalue", szOption);
+                  }
+                  else
+                  {
+                     pRequest->AddChild("voteid", iVoteID);
+                  }
+                  debugEDFPrint("FolderMenu vote", pRequest);
+                  if(CmdRequest(MSG_MESSAGE_VOTE, pRequest, &pReply) == false)
+                  {
+                     CmdEDFPrint("Voting failed", pReply);
+                     delete pReply;
+                  }
+               }
+               delete[] szOption;
             }
-
-            if(bValid == true)
-            {
-               pRequest = new EDF();
-               if(CmdVersion("2.5") < 0)
-               {
-                  pRequest->AddChild("folderid", CmdCurrFolder());
-               }
-               pRequest->AddChild("messageid", CmdCurrMessage());
-               if(IS_INT_VOTE(iVoteType) == true)
-               {
-                  pRequest->AddChild("votevalue", atoi(szOption));
-               }
-               else if(IS_FLOAT_VOTE(iVoteType) == true)
-               {
-                  pRequest->AddChild("votevalue", atof(szOption));
-               }
-               else if(mask(iVoteType, VOTE_STRVALUES) == true)
-               {
-                  pRequest->AddChild("votevalue", szOption);
-               }
-               else
-               {
-                  pRequest->AddChild("voteid", iVoteID);
-               }
-               debugEDFPrint("FolderMenu vote", pRequest);
-               if(CmdRequest(MSG_MESSAGE_VOTE, pRequest, &pReply) == false)
-               {
-                  CmdEDFPrint("Voting failed", pReply);
-                  delete pReply;
-               }
-            }
-            delete[] szOption;
             break;
 
          case 'V':
@@ -4931,35 +4887,37 @@ void FolderMenu(int iFolderID, int iMessageID, int iMsgPos)
             break;
 
          case 'y':
-            sprintf(szFilename, "msg-%d", CmdCurrMessage());
-            szOption = CmdLineStr("Filename", LINE_LEN, 0, szFilename);
-            if(szOption != NULL)
             {
-               if(CmdLogOpen(szOption) == true)
+               sprintf(szFilename, "msg-%d", CmdCurrMessage());
+               const char *szOption = CmdLineStr("Filename", LINE_LEN, 0, szFilename);
+               if(szOption != NULL)
                {
-                  m_pMessageView->Root();
-
-                  // EDFPrint("FolderMenu current message list", m_pMessageList);
-
-                  m_pMessageList->Root();
-                  m_pMessageList->GetChild("foldername", &szValue);
-
-                  // if(m_pMessageView->Child("message") == true)
+                  if(CmdLogOpen(szOption) == true)
                   {
-                     m_pUser->Root();
-                     CmdMessageView(m_pMessageView, CmdCurrFolder(), szValue, MessagePos(m_pMessageView), MessageCount(), false);
+                     m_pMessageView->Root();
+   
+                     // EDFPrint("FolderMenu current message list", m_pMessageList);
+   
+                     m_pMessageList->Root();
+                     m_pMessageList->GetChild("foldername", &szValue);
+   
+                     // if(m_pMessageView->Child("message") == true)
+                     {
+                        m_pUser->Root();
+                        CmdMessageView(m_pMessageView, CmdCurrFolder(), szValue, MessagePos(m_pMessageView), MessageCount(), false);
+                     }
+   
+                     CmdLogClose();
+   
+                     delete[] szValue;
                   }
-
-                  CmdLogClose();
-
-                  delete[] szValue;
+                  else
+                  {
+                     CmdWrite("Unable to open file\n");
+                  }
                }
-               else
-               {
-                  CmdWrite("Unable to open file\n");
-               }
+               delete[] szOption;
             }
-            delete[] szOption;
             break;
 
          case 'z':
@@ -5015,11 +4973,12 @@ bool FolderJoinMenu(int iFolderID)
    return true;
 }
 
-bool UserEditDetail(EDF *pRequest, char *szTitle, char *szName, EDF *pUser)
+bool UserEditDetail(EDF *pRequest, const char *szTitle, const char *szName, EDF *pUser)
 {
    STACKTRACE
    bool bReturn = false;
-   char *szValue = NULL, *szOption = NULL, *szType = NULL;
+   char *szValue = NULL;
+   const char *szType = NULL;
 
    if(pUser->Child("details") == true)
    {
@@ -5027,16 +4986,13 @@ bool UserEditDetail(EDF *pRequest, char *szTitle, char *szName, EDF *pUser)
       pUser->Parent();
    }
 
-   szOption = CmdLineStr(szTitle, LINE_LEN, 0, szValue);
+   const char *szOption = CmdLineStr(szTitle, LINE_LEN, 0, szValue);
 
    if(szOption != NULL && ((szValue == NULL && strcmp(szOption, "") != 0) || (szValue != NULL && strcmp(szOption, szValue) != 0)))
    {
       if(stricmp(szOption, "") == 0)
       {
          szType = "delete";
-
-         delete[] szOption;
-         szOption = NULL;
       }
       else
       {
@@ -5047,12 +5003,10 @@ bool UserEditDetail(EDF *pRequest, char *szTitle, char *szName, EDF *pUser)
       {
          pRequest->Add("details", szType);
       }
-      if(szOption != NULL)
+      if(szOption != NULL && strlen(szOption)>0)
       {
          pRequest->SetChild(szName, szOption);
          pUser->SetChild(szName, szOption);
-
-         delete[] szOption;
       }
       else
       {
@@ -5065,6 +5019,7 @@ bool UserEditDetail(EDF *pRequest, char *szTitle, char *szName, EDF *pUser)
       bReturn = true;
    }
 
+   delete[] szOption;
    delete[] szValue;
 
    return bReturn;
@@ -5076,7 +5031,7 @@ bool UserFolderMenu(EDF *pUser, int iEditID)
    int iFolderID = 0, iRetro = 0, iNumSubs = 0;
    bool bRetro = false;
    char cOption = '\0';
-   char *szRequest = NULL;
+   const char *szRequest = NULL;
    CmdInput *pInput = NULL;
    EDF *pRequest = NULL, *pReply = NULL;
 
@@ -5159,7 +5114,7 @@ bool UserFolderMenu(EDF *pUser, int iEditID)
    return true;
 }
 
-void CmdColourSet(EDF *pRequest, int iColour, char *szUse, EDF *pUser)
+void CmdColourSet(EDF *pRequest, int iColour, const char *szUse, EDF *pUser)
 {
    char szColour[100];
    int cColour = '\0';
@@ -5433,7 +5388,7 @@ bool UserEditMenu(int iEditID)
    int iAccessLevel = LEVEL_NONE, iUserID = 0, iMenuLevel = -1, iHighlight = -1, iID = 0, iMarking = 0;
    int iValue = 0, iRetro = 0, iType = 0, iConfirm = 0, iHardWrap = 0, iUserLevel = LEVEL_NONE, iOwnerID = -1;
    char cOption = '\0';
-   char *szDesc = NULL, *szPassword1 = NULL, *szPassword2 = NULL, *szOption = NULL;
+   char *szDesc = NULL;
    CmdInput *pInput = NULL;
    EDF *pRequest = NULL, *pReply = NULL, *pUser = NULL, *pKill = NULL;
 
@@ -5650,7 +5605,7 @@ bool UserEditMenu(int iEditID)
             }
             else
             {
-               szOption = CmdLineStr("Access name", ". for default", UA_NAME_LEN);
+               const char *szOption = CmdLineStr("Access name", ". for default", UA_NAME_LEN);
 
                if(szOption != NULL)
                {
@@ -5874,7 +5829,7 @@ bool UserEditMenu(int iEditID)
             else
             {
                // if(CmdYesNo("Really kill user", false) == true)
-               szOption = CmdLineStr("Really kill user", "YES to proceed");
+               const char *szOption = CmdLineStr("Really kill user", "YES to proceed");
                if(szOption != NULL && strcmp(szOption, "YES") == 0)
                {
                   pRequest->Root();
@@ -5928,21 +5883,23 @@ bool UserEditMenu(int iEditID)
             break; */
 
          case 'n':
-            szOption = CmdLineStr("Name", UA_NAME_LEN);
-            if(szOption != NULL && strcmp(szOption, "") != 0)
             {
-               iValue = UserGet(m_pUserList, szOption);
-               if(iValue == -1 || iValue == iEditID)
+               const char *szOption = CmdLineStr("Name", UA_NAME_LEN);
+               if(szOption != NULL && strcmp(szOption, "") != 0)
                {
-                  pRequest->SetChild("name", szOption);
-                  pUser->SetChild("name", szOption);
+                  iValue = UserGetFromName(m_pUserList, szOption);
+                  if(iValue == -1 || iValue == iEditID)
+                  {
+                     pRequest->SetChild("name", szOption);
+                     pUser->SetChild("name", szOption);
+                  }
+                  else
+                  {
+                     CmdWrite("That name is already in use\n");
+                  }
                }
-               else
-               {
-                  CmdWrite("That name is already in use\n");
-               }
+               delete[] szOption;
             }
-            delete[] szOption;
             break;
 
          case 'o':
@@ -6005,24 +5962,26 @@ bool UserEditMenu(int iEditID)
             break; */
 
          case 'p':
-            szPassword1 = CmdLineStr("Password", "RETURN to abort", UA_NAME_LEN, CMD_LINE_SILENT);
-            if(szPassword1 != NULL && stricmp(szPassword1, "") != 0)
             {
-               szPassword2 = CmdLineStr("Confirm password", "RETURN to abort", UA_NAME_LEN, CMD_LINE_SILENT);
-               if(szPassword2 != NULL && stricmp(szPassword2, "") != 0)
+               const char *szPassword1 = CmdLineStr("Password", "RETURN to abort", UA_NAME_LEN, CMD_LINE_SILENT);
+               if(szPassword1 != NULL && stricmp(szPassword1, "") != 0)
                {
-                  if(strcmp(szPassword1, szPassword2) == 0)
+                  const char *szPassword2 = CmdLineStr("Confirm password", "RETURN to abort", UA_NAME_LEN, CMD_LINE_SILENT);
+                  if(szPassword2 != NULL && stricmp(szPassword2, "") != 0)
                   {
-                     pRequest->AddChild("password", szPassword2);
+                     if(strcmp(szPassword1, szPassword2) == 0)
+                     {
+                        pRequest->AddChild("password", szPassword2);
+                     }
+                     else
+                     {
+                        CmdWrite("Passwords do not match\n");
+                     }
                   }
-                  else
-                  {
-                     CmdWrite("Passwords do not match\n");
-                  }
+                  delete[] szPassword2;
                }
-               delete[] szPassword2;
+               delete[] szPassword1;
             }
-            delete[] szPassword1;
             break;
 
          /* case 'r':
@@ -6101,7 +6060,7 @@ bool UserEditMenu(int iEditID)
                cOption = CmdMenu(pInput);
                if(cOption == 'a')
                {
-                  szOption = CmdLineStr("Agent name", "may include wildcards", UA_NAME_LEN);
+                  const char *szOption = CmdLineStr("Agent name", "may include wildcards", UA_NAME_LEN);
                   if(szOption != NULL)
                   {
                      iValue = USERTYPE_NONE;
@@ -6287,7 +6246,7 @@ bool FolderEditMenu(int iEditID)
    int iUserID = 0, iAccessLevel = LEVEL_NONE, iSubType = 0, iFolderMode = FOLDERMODE_NORMAL, iOption = 0;
    bool bLoop = true;
    char cOption = '\0';
-   char *szUserName = NULL, *szName = NULL, *szOption = NULL, *szText = NULL;
+   char *szUserName = NULL, *szName = NULL, *szText = NULL;
    EDF *pReply = NULL, *pFolder = NULL, *pRequest = NULL, *pKill = NULL, *pSub = NULL;
    CmdInput *pInput = NULL;
 
@@ -6469,20 +6428,22 @@ bool FolderEditMenu(int iEditID)
             break;
 
          case 'k':
-            // if(CmdYesNo("Really kill folder", false) == true)
-            szOption = CmdLineStr("Really kill folder", "YES to proceed");
-            if(strcmp(szOption, "YES") == 0)
             {
-               pRequest->Root();
-               while(pRequest->DeleteChild() == true);
-
-               pKill = new EDF();
-               pKill->AddChild("folderid", iEditID);
-               CmdRequest(MSG_FOLDER_DELETE, pKill);
-
-               bLoop = false;
+               // if(CmdYesNo("Really kill folder", false) == true)
+               const char *szOption = CmdLineStr("Really kill folder", "YES to proceed");
+               if(strcmp(szOption, "YES") == 0)
+               {
+                  pRequest->Root();
+                  while(pRequest->DeleteChild() == true);
+   
+                  pKill = new EDF();
+                  pKill->AddChild("folderid", iEditID);
+                  CmdRequest(MSG_FOLDER_DELETE, pKill);
+   
+                  bLoop = false;
+               }
+               delete[] szOption;
             }
-            delete[] szOption;
             break;
 
          case 'l':
@@ -6503,14 +6464,16 @@ bool FolderEditMenu(int iEditID)
             break;
 
          case 'n':
-            // name
-            szOption = CmdLineStr("Name", UA_NAME_LEN);
-            if(szOption != NULL && strcmp(szOption, "") != 0)
             {
-               pFolder->SetChild("name", szOption);
-               pRequest->SetChild("name", szOption);
+               // name
+               const char *szOption = CmdLineStr("Name", UA_NAME_LEN);
+               if(szOption != NULL && strcmp(szOption, "") != 0)
+               {
+                  pFolder->SetChild("name", szOption);
+                  pRequest->SetChild("name", szOption);
+               }
+               delete[] szOption;
             }
-            delete[] szOption;
             break;
 
          case 'p':
@@ -6650,7 +6613,6 @@ bool UserListMenu()
    bool bLoop = false, bFull = false;
    char cOption = '\0';
    char szWrite[100];
-   char *szUser = NULL;
    EDF *pRequest = NULL, *pReply = NULL, *pSystem = NULL;
    CmdInput *pInput = NULL;
 
@@ -6662,7 +6624,7 @@ bool UserListMenu()
    delete pSystem;
 
    // CmdLineUser(NULL, -1, &szUser, false);
-   szUser = CmdLineStr("Name of user");
+   const char *szUser = CmdLineStr("Name of user");
    if(szUser == NULL || strlen(szUser) == 0)
    {
       delete[] szUser;
@@ -6683,7 +6645,7 @@ bool UserListMenu()
    }
    else if(strchr(szUser, '*') == NULL)
    {
-      iUserID = UserGet(m_pUserList, szUser);
+      iUserID = UserGetFromName(m_pUserList, szUser);
       if(iUserID == -1)
       {
          sprintf(szWrite, "\0374%s\0370 does not exist\n", szUser);
@@ -7002,7 +6964,6 @@ void LocationEditMenu(EDF *pLocation)
 {
    int iLocationID = -1;
    char cOption = '\0';
-   char *szMatch = NULL;
    EDF *pRequest = NULL;
    CmdInput *pInput = NULL;
 
@@ -7029,36 +6990,38 @@ void LocationEditMenu(EDF *pLocation)
       {
          case 'a':
          case 'd':
-            szMatch = CmdLineStr("Match");
-            if(szMatch != NULL && strlen(szMatch) > 0)
             {
-               if(cOption == 'a' || pLocation->Child(isdigit(szMatch[0]) ? "address" : "hostname", szMatch) == true)
+               const char *szMatch = CmdLineStr("Match");
+               if(szMatch != NULL && strlen(szMatch) > 0)
                {
-                  if(cOption == 'a')
+                  if(cOption == 'a' || pLocation->Child(isdigit(szMatch[0]) ? "address" : "hostname", szMatch) == true)
                   {
-                     if(pRequest->Child("add") == false)
+                     if(cOption == 'a')
                      {
-                        pRequest->Add("add");
+                        if(pRequest->Child("add") == false)
+                        {
+                           pRequest->Add("add");
+                        }
+                        pLocation->AddChild(isdigit(szMatch[0]) ? "address" : "hostname", szMatch);
                      }
-                     pLocation->AddChild(isdigit(szMatch[0]) ? "address" : "hostname", szMatch);
+                     else
+                     {
+                        if(pRequest->Child("delete") == false)
+                        {
+                           pRequest->Add("delete");
+                        }
+                        pLocation->Delete();
+                     }
+                     pRequest->AddChild(isdigit(szMatch[0]) ? "address" : "hostname", szMatch);
+                     pRequest->Parent();
                   }
                   else
                   {
-                     if(pRequest->Child("delete") == false)
-                     {
-                        pRequest->Add("delete");
-                     }
-                     pLocation->Delete();
+                     CmdWrite("Cannot find match\n");
                   }
-                  pRequest->AddChild(isdigit(szMatch[0]) ? "address" : "hostname", szMatch);
-                  pRequest->Parent();
                }
-               else
-               {
-                  CmdWrite("Cannot find match\n");
-               }
+               delete[] szMatch;
             }
-            delete[] szMatch;
             break;
 
          case 'k':
@@ -7097,7 +7060,7 @@ void LocationsMenu()
    bool bLoop = false, bRequest = true;
    char cOption = '\0';
    char szWrite[200];
-   char *szName = NULL, *szParent = NULL, *szOption = NULL, *szLocation = NULL;
+   char *szLocation = NULL;
    EDF *pRequest = NULL, *pReply = NULL, *pLocation = NULL;
    CmdInput *pInput = NULL;
 
@@ -7131,59 +7094,61 @@ void LocationsMenu()
       switch(cOption)
       {
          case 'a':
-            szName = CmdLineStr("Name", LINE_LEN);
-            if(szName != NULL && strlen(szName) > 0)
             {
-               pRequest = new EDF();
-               pRequest->AddChild("name", szName);
-
-               szParent = CmdLineStr("Parent ID", "RETURN for top level");
-               if(szParent != NULL && strlen(szParent) > 0)
+               const char *szName = CmdLineStr("Name", LINE_LEN);
+               if(szName != NULL && strlen(szName) > 0)
                {
-                  iParentID = atoi(szParent);
-                  if(iParentID != -1)
+                  pRequest = new EDF();
+                  pRequest->AddChild("name", szName);
+   
+                  const char *szParent = CmdLineStr("Parent ID", "RETURN for top level");
+                  if(szParent != NULL && strlen(szParent) > 0)
                   {
-                     pRequest->AddChild("parentid", iParentID);
-                  }
-               }
-
-               // pRequest->Add("add");
-               bLoop = true;
-               while(bLoop == true)
-               {
-                  szOption = CmdLineStr("Match with", "RETURN to end", LINE_LEN);
-                  if(szOption != NULL && strlen(szOption) > 0)
-                  {
-                     if(isdigit(szOption[0]))
+                     iParentID = atoi(szParent);
+                     if(iParentID != -1)
                      {
-                        pRequest->AddChild("address", szOption);
+                        pRequest->AddChild("parentid", iParentID);
+                     }
+                  }
+   
+                  // pRequest->Add("add");
+                  bLoop = true;
+                  while(bLoop == true)
+                  {
+                     const char *szOption = CmdLineStr("Match with", "RETURN to end", LINE_LEN);
+                     if(szOption != NULL && strlen(szOption) > 0)
+                     {
+                        if(isdigit(szOption[0]))
+                        {
+                           pRequest->AddChild("address", szOption);
+                        }
+                        else
+                        {
+                           pRequest->AddChild("hostname", szOption);
+                        }
                      }
                      else
                      {
-                        pRequest->AddChild("hostname", szOption);
+                        bLoop = false;
+                        if(szOption == NULL)
+                        {
+                           bRequest = false;
+                        }
                      }
+                     delete[] szOption;
                   }
-                  else
+                  // pRequest->Parent();
+   
+                  if(bRequest == true)
                   {
-                     bLoop = false;
-                     if(szOption == NULL)
-                     {
-                        bRequest = false;
-                     }
+                     CmdEDFPrint("LocationsMenu request", pRequest);
+                     CmdRequest(MSG_LOCATION_ADD, pRequest);
                   }
-                  delete[] szOption;
+   
+                  delete[] szParent;
                }
-               // pRequest->Parent();
-
-               if(bRequest == true)
-               {
-                  CmdEDFPrint("LocationsMenu request", pRequest);
-                  CmdRequest(MSG_LOCATION_ADD, pRequest);
-               }
-
-               delete[] szParent;
+               delete[] szName;
             }
-            delete[] szName;
             break;
 
          case 'd':
@@ -7231,36 +7196,38 @@ void LocationsMenu()
             break;
 
          case 'o':
-            pRequest = new EDF();
-            szOption = CmdLineStr("Lookup");
-            if(szOption != NULL && strlen(szOption) > 0)
             {
-               if(isdigit(szOption[0]))
+               pRequest = new EDF();
+               const char *szOption = CmdLineStr("Lookup");
+               if(szOption != NULL && strlen(szOption) > 0)
                {
-                  pRequest->AddChild("address", szOption);
-               }
-               else
-               {
-                  pRequest->AddChild("hostname", szOption);
-               }
-
-               if(CmdRequest(MSG_LOCATION_LOOKUP, pRequest, &pReply) == true)
-               {
-                  // CmdEDFPrint("LocationsMenu lookup", pReply);
-                  if(pReply->GetChild("location", &szLocation) == true)
+                  if(isdigit(szOption[0]))
                   {
-                     sprintf(szWrite, "\0374%s\0370 matches \0374%s\0370\n", szOption, szLocation);
-                     delete[] szLocation;
+                     pRequest->AddChild("address", szOption);
                   }
                   else
                   {
-                     sprintf(szWrite, "\0374%s\0370 does not match any location\n", szOption);
+                     pRequest->AddChild("hostname", szOption);
                   }
-                  CmdWrite(szWrite);
+   
+                  if(CmdRequest(MSG_LOCATION_LOOKUP, pRequest, &pReply) == true)
+                  {
+                     // CmdEDFPrint("LocationsMenu lookup", pReply);
+                     if(pReply->GetChild("location", &szLocation) == true)
+                     {
+                        sprintf(szWrite, "\0374%s\0370 matches \0374%s\0370\n", szOption, szLocation);
+                        delete[] szLocation;
+                     }
+                     else
+                     {
+                        sprintf(szWrite, "\0374%s\0370 does not match any location\n", szOption);
+                     }
+                     CmdWrite(szWrite);
+                  }
+                  delete pReply;
                }
-               delete pReply;
+               delete[] szOption;
             }
-            delete[] szOption;
             break;
 
          case 's':
@@ -7277,7 +7244,6 @@ void LocationsMenu()
 void ConnectionMenu()
 {
    char cOption = '\0';
-   char *szOption = NULL;
    CmdInput *pInput = NULL;
    EDF *pRequest = NULL;
 
@@ -7311,7 +7277,7 @@ void ConnectionMenu()
          }
          else
          {
-            szOption = CmdLineStr("Match");
+            const char *szOption = CmdLineStr("Match");
             if(szOption != NULL && strlen(szOption) > 0)
             {
                if(cOption == 'a' || cOption == 'r')
@@ -7356,6 +7322,8 @@ void ConnectionMenu()
       }
    }
 }
+
+/* SGD - Removed non future proof menu
 
 EDF *DirectRequestMenu(char **szRequest)
 {
@@ -7402,6 +7370,7 @@ EDF *DirectRequestMenu(char **szRequest)
 
    return pReturn;
 }
+*/
 
 int TaskDayMenu()
 {
@@ -7461,8 +7430,8 @@ void TaskMenu()
    int iTaskID = 0;
    int iDay = 0, iRepeat = 0, iTime = 0, iHour = 0, iMinute = 0;
    char cOption = '\0';
-   char *szRequest = NULL, *szBanner = NULL;
-   EDF *pRequest = NULL, *pReply = NULL, *pEDF = NULL;
+   char *szBanner = NULL;
+   EDF *pRequest = NULL, *pReply = NULL;
    CmdInput *pInput = NULL;
 
    CmdRequest(MSG_TASK_LIST, &pReply);
@@ -7545,7 +7514,9 @@ void TaskMenu()
                pRequest->AddChild("time", iTime);
             }
 
-            pEDF = DirectRequestMenu(&szRequest);
+            /* SGD - Removed non future proof thing
+            char *szRequest = NULL;
+            EDF *pEDF = DirectRequestMenu(&szRequest);
             if(pEDF != NULL)
             {
                pRequest->Add("request", szRequest);
@@ -7561,6 +7532,7 @@ void TaskMenu()
                delete pEDF;
             }
             delete[] szRequest;
+            */
             break;
 
          case 'b':
@@ -7613,7 +7585,8 @@ void AdminMenu()
    bool bLoop = true;
    char cOption = '\0';
    char szWrite[100];
-   char *szOption = NULL, *szText = NULL, *szReply = NULL, *szBanner = NULL, *szInfo = NULL;
+   //char *szOption = NULL
+   char *szText = NULL, *szBanner = NULL, *szInfo = NULL;
    // byte *pWrite = NULL;
    EDF *pRequest = NULL, *pReply = NULL, *pEDF = NULL, *pSystem = NULL;
    CmdInput *pInput = NULL;
@@ -7622,7 +7595,7 @@ void AdminMenu()
    CmdSystemView(pSystem);
 
    // sprintf(szWrite, "Client:       \0373%s\0370 build \0373%d\0370, \0373%s %s\0370\n\n", CLIENT_NAME(), BUILDNUM, BUILDTIME, BUILDDATE);
-   sprintf(szWrite, "Client:       \0373%s\0370 build \0373%d\0370, \0373%s %s\0370 (PID \0373%lu\0370)\n", CLIENT_NAME(), BuildNum(), BuildTime(), BuildDate(), CmdPID());
+   sprintf(szWrite, "Client:       \0373%s\0370 build \0373%d\0370, \0373%s %s\0370 (PID \0373%u\0370)\n", CLIENT_NAME(), BuildNum(), BuildTime(), BuildDate(), CmdPID());
    CmdWrite(szWrite);
    sprintf(szWrite, "Server:       \0373%s\0370 (port \0373%d\0370", m_pClient->Hostname(), m_pClient->Port());
    if(m_pClient->GetSecure() == true)
@@ -7643,7 +7616,8 @@ void AdminMenu()
       {
          case 'a':
             // Add user
-            CreateUserMenu(true, NULL, NULL);
+            //CreateUserMenu(true, NULL, NULL);
+            // FIXME - SGD removed this horrible thing
             break;
 
          case 'b':
@@ -7651,6 +7625,8 @@ void AdminMenu()
             break;
 
          case 'c':
+            {
+            char *szOption = NULL;
             // Create folder
             CmdLineFolder(-1, &szOption, false);
             if(szOption != NULL && strcmp(szOption, "") != 0)
@@ -7722,6 +7698,7 @@ void AdminMenu()
                }
             }
             delete[] szOption;
+            }
             break;
 
          /* case 'o':
@@ -7764,7 +7741,7 @@ void AdminMenu()
             iID = CmdLineUser(CmdUserLoginTab);
             if(iID != -1)
             {
-               szOption = CmdLineStr("Message", "RETURN for none");
+               const char *szOption = CmdLineStr("Message", "RETURN for none");
                if(szOption != NULL)
                {
                   pRequest = new EDF();
@@ -7835,6 +7812,7 @@ void AdminMenu()
             break;
 
          case 'q':
+            /* SGD - FIXME - removed non future proof call
             pRequest = DirectRequestMenu(&szOption);
             if(pRequest != NULL)
             {
@@ -7844,10 +7822,6 @@ void AdminMenu()
 
                CmdPageOn();
                sprintf(szWrite, "Reply \0374%s\0370", szReply);
-               /* if(lWriteLen > 1)
-               {
-                  sprintf(szWrite, "%s (\0374%ld\0370 bytes):", szWrite, lWriteLen);
-               } */
                // strcat(szWrite, "\n");
                // CmdWrite(szWrite);
                // if(lWriteLen > 1)
@@ -7867,6 +7841,7 @@ void AdminMenu()
                // delete[] pWrite;
             }
             delete[] szOption;
+            */
             break;
 
          /* case 'r':
@@ -7904,40 +7879,47 @@ void AdminMenu()
                }
                else
                {
-                  szOption = CmdLineStr("Really transfer SysOp level", "YES to proceed", LINE_LEN, 0, NULL, NULL, NULL);
-                  if(szOption != NULL && strcmp(szOption, "YES") == 0)
+                  const char *szOption = CmdLineStr("Really transfer SysOp level", "YES to proceed", LINE_LEN, 0, NULL, NULL, NULL);
+                  if(szOption != NULL)
                   {
-                     pRequest = new EDF();
-                     pRequest->AddChild("userid", iID);
-                     CmdRequest(MSG_USER_SYSOP, pRequest);
+                     if (strcmp(szOption, "YES") == 0)
+                     {
+                        pRequest = new EDF();
+                        pRequest->AddChild("userid", iID);
+                        CmdRequest(MSG_USER_SYSOP, pRequest);
 
+
+                        CmdUserReset();
+                     }
                      delete[] szOption;
-
-                     CmdUserReset();
                   }
                }
             }
             break;
 
          case 'u':
-            szOption = CmdLineStr("Really shut down server", "YES to proceed");
-            if(szOption != NULL && strcmp(szOption, "YES") == 0)
             {
-               CmdRequest(MSG_SYSTEM_SHUTDOWN);
+               const char *szOption = CmdLineStr("Really shut down server", "YES to proceed");
+               if(szOption != NULL && strcmp(szOption, "YES") == 0)
+               {
+                  CmdRequest(MSG_SYSTEM_SHUTDOWN);
+               }
+               delete[] szOption;
             }
-            delete[] szOption;
             break;
 
          case 'v':
-            szOption = CmdLineStr("Really reload server library", "YES to proceed");
-            if(szOption != NULL && strcmp(szOption, "YES") == 0)
             {
-               pEDF = new EDF();
-               pEDF->Set("edf", "reload");
-               m_pClient->Write(pEDF);
-               delete pEDF;
+               const char *szOption = CmdLineStr("Really reload server library", "YES to proceed");
+               if(szOption != NULL && strcmp(szOption, "YES") == 0)
+               {
+                  pEDF = new EDF();
+                  pEDF->Set("edf", "reload");
+                  m_pClient->Write(pEDF);
+                  delete pEDF;
+               }
+               delete[] szOption;
             }
-            delete[] szOption;
             break;
 
          case 'w':
@@ -7949,12 +7931,14 @@ void AdminMenu()
             break;
 
          case 'y':
-            szOption = CmdLineStr("Really run maintenance", "YES to proceed");
-            if(szOption != NULL && strcmp(szOption, "YES") == 0)
             {
-               CmdRequest(MSG_SYSTEM_MAINTENANCE);
+               const char *szOption = CmdLineStr("Really run maintenance", "YES to proceed");
+               if(szOption != NULL && strcmp(szOption, "YES") == 0)
+               {
+                  CmdRequest(MSG_SYSTEM_MAINTENANCE);
+               }
+               delete[] szOption;
             }
-            delete[] szOption;
             break;
 
          case '/':
@@ -7988,7 +7972,7 @@ bool PageHistoryMenu()
       return false;
    }
 
-   UserGet(m_pUserList, iUserID, &szUser, true, -1);
+   UserGetFromId(m_pUserList, iUserID, &szUser, true, -1);
 
    m_pPaging->Root();
    bLoop = m_pPaging->Child("page");
@@ -8473,11 +8457,6 @@ bool PageMenu(EDF *pPage, bool bBell)
 
          m_pServiceList->Parent();
 
-         if(g_pGame != NULL && g_pGame->ServiceID() == iServiceID && stricmp(szServiceAction, ACTION_LOGOUT) == 0)
-         {
-            delete g_pGame;
-            g_pGame = NULL;
-         }
       }
       else
       {
@@ -8488,13 +8467,6 @@ bool PageMenu(EDF *pPage, bool bBell)
       }
       // CmdWrite(szWrite);
 
-      if(g_pGame != NULL && g_pGame->ServiceID() == iServiceID)
-      {
-         debug("PageMenu matched service ID %d with game\n", iServiceID);
-         bReturn = g_pGame->Action(szServiceAction, pPage);
-
-         m_pServiceList->Parent();
-      }
 
       delete[] szServiceAction;
 
@@ -8648,7 +8620,7 @@ void FolderPrioritiesMenu()
                pRequest->AddChild("priority", iPriority);
                if(CmdRequest(MSG_FOLDER_SUBSCRIBE, pRequest) == true)
                {
-                  if(FolderGet(m_pFolderNav, iFolderID, NULL, false) == true)
+                  if(FolderGetFromId(m_pFolderNav, iFolderID, (char **) NULL, false) == true)
                   {
                      m_pFolderNav->SetChild("priority", iPriority);
                   }
@@ -8770,7 +8742,7 @@ void MessageMenu()
 {
    int iMessageID = -1, iVoteType = 0;
    char cOption = '\0';
-   EDF *pRequest = NULL, *pReply = NULL, *pTemp = NULL, *pMessageIn, *pMessageOut = NULL;
+   EDF *pRequest = NULL, *pReply = NULL, *pTemp = NULL;
 
    while(cOption != 'x')
    {
@@ -8917,7 +8889,6 @@ void BusyMenu()
    char cOption = '\0';
    int iStatus = LOGIN_OFF;
    char szWrite[100];
-   char *szText = NULL;
    CmdInput *pInput = NULL;
    EDF *pRequest = NULL;
 
@@ -8944,7 +8915,7 @@ void BusyMenu()
 
    if(cOption != 'x')
    {
-      szText = CmdLineStr("Message", "RETURN for none", LINE_LEN);
+      const char *szText = CmdLineStr("Message", "RETURN for none", LINE_LEN);
       if(szText != NULL)
       {
          pRequest = new EDF();
@@ -8965,150 +8936,6 @@ void BusyMenu()
    }
 }
 
-void GameMenu()
-{
-   STACKTRACE
-   int iServiceID = 0, iOption = 0;
-   bool bMenu = true, bLoop = false;
-   char cOption = '\0';
-   char szWrite[200];
-   char *szName = NULL, *szContentType = NULL;
-   CmdInput *pInput = NULL;
-   EDF *pOptions = NULL;
-   Game *pTemp = NULL;
-
-   while(bMenu == true)
-   {
-      cOption = CmdMenu(GAME);
-
-      if(g_pGame != NULL && g_pGame->IsRunning() == true)
-      {
-         g_pGame->Key(cOption);
-
-         if(g_pGame->IsEnded() == true)
-         {
-            delete g_pGame;
-            g_pGame = NULL;
-         }
-      }
-      else
-      {
-         switch(cOption)
-         {
-            case 'c':
-            case 'j':
-               iServiceID = -1;
-               bLoop = m_pServiceList->Child("service");
-               while(bLoop == true)
-               {
-                  if(m_pServiceList->GetChild("content-type", &szContentType) == true && szContentType != NULL)
-                  {
-                     pTemp = FindGame(szContentType);
-                     if(pTemp != NULL)
-                     {
-                        m_pServiceList->Get(NULL, &iServiceID);
-                        m_pServiceList->GetChild("name", &szName);
-
-                        sprintf(szWrite, "\0373%d\0370: \0373%s\0370\n", iServiceID, szName);
-                        CmdWrite(szWrite);
-
-                        delete[] szName;
-
-                        delete pTemp;
-                     }
-                     delete[] szContentType;
-                  }
-
-                  bLoop = m_pServiceList->Next("service");
-                  if(bLoop == false)
-                  {
-                     m_pServiceList->Parent();
-                  }
-               }
-
-               if(iServiceID != -1)
-               {
-                  iOption = CmdLineNum("Game");
-                  if(EDFFind(m_pServiceList, "service", iOption, false) == true)
-                  {
-                     m_pServiceList->GetChild("content-type", &szContentType);
-
-                     g_pGame = FindGame(szContentType);
-
-                     if(cOption == 'c')
-                     {
-                        pOptions = g_pGame->CreateOptions();
-
-                        if(g_pGame->Create(iOption, pOptions) == false)
-                        {
-                           CmdWrite("Cannot create game\n");
-                           delete g_pGame;
-                           g_pGame = NULL;
-                        }
-
-                        delete pOptions;
-                     }
-                     else if(cOption == 'j')
-                     {
-                        pOptions = g_pGame->JoinOptions();
-
-                        if(g_pGame->Join(iOption, pOptions) == false)
-                        {
-                           CmdWrite("Cannot join game\n");
-                           delete g_pGame;
-                           g_pGame = NULL;
-                        }
-
-                        delete pOptions;
-                     }
-
-                     delete[] szContentType;
-
-                     m_pServiceList->Parent();
-                  }
-                  else
-                  {
-                     CmdWrite("Invalid game\n");
-                  }
-               }
-               else
-               {
-                  CmdWrite("No games found\n");
-               }
-               break;
-
-            case 'e':
-               g_pGame->End();
-               break;
-
-            case 's':
-               pOptions = g_pGame->StartOptions();
-
-               if(g_pGame->Start(pOptions) == false)
-               {
-                  CmdWrite("Cannot start game\n");
-                  delete g_pGame;
-                  g_pGame = NULL;
-               }
-
-               delete pOptions;
-               break;
-
-            case 'x':
-               if(g_pGame != NULL)
-               {
-                  g_pGame->End();
-               }
-
-               bMenu = false;
-               break;
-         }
-      }
-   }
-
-   delete g_pGame;
-   g_pGame = NULL;
-}
 
 void MainMenu()
 {
@@ -9116,7 +8943,7 @@ void MainMenu()
    bool bQuit = false, bRequest = false;
    int iStatus = LOGIN_OFF, iAccessLevel = LEVEL_NONE, iMessageID = 0, iFolderID = 0;
    char cOption = '\0', szWrite[200];
-   char *szText = NULL, *szName = NULL, *szMessage = NULL;
+   char *szName = NULL, *szMessage = NULL;
    EDF *pRequest = NULL, *pReply = NULL;
 
    debug(DEBUGLEVEL_INFO, "MainMenu entry\n");
@@ -9134,24 +8961,14 @@ void MainMenu()
             break;
 
          case 'b':
-            bRequest = false;
-
-            iStatus = CmdInput::MenuStatus();
-            if(mask(iStatus, LOGIN_BUSY) == false)
             {
-               iStatus += LOGIN_BUSY;
-               szText = CmdLineStr("Busy message", "RETURN for none", LINE_LEN);
-               if(szText != NULL)
+               const char *szText = NULL;
+               bRequest = false;
+   
+               iStatus = CmdInput::MenuStatus();
+               if(mask(iStatus, LOGIN_BUSY) == false)
                {
-                  bRequest = true;
-               }
-            }
-            else
-            {
-               iStatus -= LOGIN_BUSY;
-
-               if(cOption == 'B')
-               {
+                  iStatus += LOGIN_BUSY;
                   szText = CmdLineStr("Busy message", "RETURN for none", LINE_LEN);
                   if(szText != NULL)
                   {
@@ -9160,26 +8977,39 @@ void MainMenu()
                }
                else
                {
-                  bRequest = true;
-                  szText = NULL;
+                  iStatus -= LOGIN_BUSY;
+   
+                  if(cOption == 'B')
+                  {
+                     szText = CmdLineStr("Busy message", "RETURN for none", LINE_LEN);
+                     if(szText != NULL)
+                     {
+                        bRequest = true;
+                     }
+                  }
+                  else
+                  {
+                     bRequest = true;
+                     szText = NULL;
+                  }
                }
-            }
-
-            if(bRequest == true)
-            {
-               pRequest = new EDF();
-               pRequest->Add("login");
-               pRequest->AddChild("status", iStatus);
-               if(mask(iStatus, LOGIN_BUSY) == false || (szText != NULL && stricmp(szText, "") != 0))
+   
+               if(bRequest == true)
                {
-                  pRequest->AddChild(CmdVersion("2.5") >= 0 ? "statusmsg" : "busymsg", szText);
+                  pRequest = new EDF();
+                  pRequest->Add("login");
+                  pRequest->AddChild("status", iStatus);
+                  if(mask(iStatus, LOGIN_BUSY) == false || (szText != NULL && stricmp(szText, "") != 0))
+                  {
+                     pRequest->AddChild(CmdVersion("2.5") >= 0 ? "statusmsg" : "busymsg", szText);
+                  }
+                  delete[] szText;
+                  pRequest->Parent();
+   
+                  // CmdEDFPrint("MainMenu busy request", pRequest);
+                  CmdRequest(MSG_USER_EDIT, pRequest);
+                  CmdUserReset();
                }
-               delete[] szText;
-               pRequest->Parent();
-
-               // CmdEDFPrint("MainMenu busy request", pRequest);
-               CmdRequest(MSG_USER_EDIT, pRequest);
-               CmdUserReset();
             }
             break;
 
@@ -9213,7 +9043,7 @@ void MainMenu()
 
                if(cOption == 'q')
                {
-                  szText = CmdLineStr("Message", LINE_LEN);
+                  const char *szText = CmdLineStr("Message", LINE_LEN);
                   if(szText != NULL)
                   {
                      bRequest = true;
@@ -9224,6 +9054,7 @@ void MainMenu()
                         pRequest->AddChild("text", szText);
                      }
                   }
+                  delete[] szText;
                }
                else
                {
@@ -9317,7 +9148,7 @@ void MainMenu()
             break;
 
          case 'k':
-            GameMenu();
+            // SGD - Removed (was a call to GameMenu() )
             break;
 
          case 'l':
@@ -9561,33 +9392,16 @@ void DefaultWholist()
    delete pReply;
 }
 
-bool CreateUserMenu(bool bLoggedIn, char **szUsername, char **szPassword)//, EDF *pSystemList)
+bool CreateUserMenu(char **szUsername, char **szPassword)//, EDF *pSystemList)
 {
    STACKTRACE
    int iGender = 0;
    bool bLoop = true;
-   char *szNewUser = NULL, *szName = NULL, *szRealName = NULL, *szEmail = NULL, *szRefer = NULL, *szPW1 = NULL, *szPW2 = NULL;
    char szWrite[200];
    char cOption = '\0';
    EDF *pUserList = NULL, *pRequest = NULL, *pReply = NULL;
    CmdInput *pInput = NULL;
 
-   if(bLoggedIn == false)
-   {
-      m_pServiceList->GetChild("newuser", &szNewUser);
-      CmdWrite("\n");
-      if(szNewUser != NULL)
-      {
-         CmdWrite(szNewUser, CMD_OUT_NOHIGHLIGHT);
-         CmdWrite("\n\n");
-         delete[] szNewUser;
-      }
-
-      if(CmdYesNo("Do you still want to become a user", false) == false)
-      {
-         CmdShutdown("Goodbye then");
-      }
-   }
 
    CmdRequest(MSG_USER_LIST, &pUserList);
 
@@ -9596,8 +9410,7 @@ bool CreateUserMenu(bool bLoggedIn, char **szUsername, char **szPassword)//, EDF
       bLoop = true;
       while(bLoop == true)
       {
-         delete[] szName;
-         szName = CmdLineStr(bLoggedIn == true ? "Name of user" : "What name would you like to use (spaces allowed)", UA_NAME_LEN, bLoggedIn == false ? CMD_LINE_NOESCAPE : 0);
+         const char *szName = CmdLineStr("What name would you like to use (spaces allowed)", UA_NAME_LEN, CMD_LINE_NOESCAPE);
          if(szName == NULL)
          {
             delete pUserList;
@@ -9608,39 +9421,32 @@ bool CreateUserMenu(bool bLoggedIn, char **szUsername, char **szPassword)//, EDF
          {
             CmdWrite("Sorry, that name is invalid. Please choose another\n");
          }
-         else if(UserGet(pUserList, szName) != -1)
+         else if(UserGetFromName(pUserList, szName) != -1)
          {
             CmdWrite("Sorry, that name is already in user. Please choose another\n\n");
          }
          else
          {
             bLoop = false;
+            *szUsername = (char*)szName;
          }
       }
 
-      if(bLoggedIn == false)
-      {
-         *szUsername = szName;
-      }
 
-      szRealName = CmdLineStr("Real name", LINE_LEN, CMD_LINE_NOESCAPE);
-      szEmail = CmdLineStr("Email address", LINE_LEN, CMD_LINE_NOESCAPE);
-      if(bLoggedIn == false && CmdVersion("2.5") >= 0)
-      {
-         szRefer = CmdLineStr("How did you hear about us", LINE_LEN, CMD_LINE_NOESCAPE);
-      }
+      const char *szRealName = CmdLineStr("Real name", LINE_LEN, CMD_LINE_NOESCAPE);
+      const char *szEmail = CmdLineStr("Email address", LINE_LEN, CMD_LINE_NOESCAPE);
 
       bLoop = true;
       while(bLoop == true)
       {
-         szPW1 = CmdLineStr("Password (3 characters minimum)", UA_NAME_LEN, CMD_LINE_SILENT | CMD_LINE_NOESCAPE);
+         const char *szPW1 = CmdLineStr("Password (3 characters minimum)", UA_NAME_LEN, CMD_LINE_SILENT | CMD_LINE_NOESCAPE);
          if(strlen(szPW1) < 3)
          {
             CmdWrite("Sorry, that password is too short\n");
          }
          else
          {
-            szPW2 = CmdLineStr("Confirm password", UA_NAME_LEN, CMD_LINE_SILENT | CMD_LINE_NOESCAPE);
+            const char *szPW2 = CmdLineStr("Confirm password", UA_NAME_LEN, CMD_LINE_SILENT | CMD_LINE_NOESCAPE);
             if(strcmp(szPW1, szPW2) != 0)
             {
                CmdWrite("Sorry, passwords do not match\n");
@@ -9648,15 +9454,12 @@ bool CreateUserMenu(bool bLoggedIn, char **szUsername, char **szPassword)//, EDF
             else
             {
                bLoop = false;
+               *szPassword = (char*)szPW1;
             }
+            delete[] szPW2;
          }
       }
 
-      if(bLoggedIn == false)
-      {
-         *szPassword = szPW1;
-      }
-      delete[] szPW2;
 
       pInput = new CmdInput(CMD_MENU_SIMPLE | CMD_MENU_NOCASE, "Gender");
       pInput->MenuAdd('m', "Male");
@@ -9671,7 +9474,7 @@ bool CreateUserMenu(bool bLoggedIn, char **szUsername, char **szPassword)//, EDF
          iGender = GENDER_FEMALE;
       }
 
-      sprintf(szWrite, "Name:      %s\n", szName);
+      sprintf(szWrite, "Name:      %s\n", *szUsername);
       CmdWrite(szWrite);
       sprintf(szWrite, "Real name: %s\n", szRealName);
       CmdWrite(szWrite);
@@ -9684,8 +9487,8 @@ bool CreateUserMenu(bool bLoggedIn, char **szUsername, char **szPassword)//, EDF
       if(CmdYesNo("Is this correct", false) == true)
       {
          pRequest = new EDF();
-         pRequest->AddChild("name", szName);
-         pRequest->AddChild("password", szPW1);
+         pRequest->AddChild("name", *szUsername);
+         pRequest->AddChild("password", *szPassword);
          pRequest->AddChild("gender", iGender);
          pRequest->Add("details", "add");
          if(szRealName != NULL)
@@ -9696,10 +9499,16 @@ bool CreateUserMenu(bool bLoggedIn, char **szUsername, char **szPassword)//, EDF
          {
             pRequest->AddChild("email", szEmail);
          }
-         if(szRefer != NULL)
+         /* SGD - removed - don't reall y need this anyway
+         if(CmdVersion("2.5") >= 0)
          {
-            pRequest->AddChild("refer", szRefer);
+            const char *szRefer = CmdLineStr("How did you hear about us", LINE_LEN, CMD_LINE_NOESCAPE);
+            if(szRefer != NULL)
+            {
+               pRequest->AddChild("refer", szRefer);
+            }
          }
+         */
          pRequest->Parent();
          if(CmdRequest(MSG_USER_ADD, pRequest, &pReply) == false)
          {
@@ -9711,14 +9520,10 @@ bool CreateUserMenu(bool bLoggedIn, char **szUsername, char **szPassword)//, EDF
          }
          delete pReply;
       }
-      else if(bLoggedIn == true)
-      {
-         bLoop = false;
-      }
+      delete[] szRealName;
+      delete[] szEmail;
    }
 
-   delete[] szRealName;
-   delete[] szEmail;
 
    delete pUserList;
 
