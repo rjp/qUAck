@@ -22,7 +22,7 @@
 #include "CliFolder.h"
 
 // Internal folder get method
-bool FolderGet(EDF *pData, int *iFolderID, char **szFolderName, int iSearchType, bool bReset)
+bool InternalFolderGet(EDF *pData, int *iFolderID, char **szFolderName, int iSearchType, bool bReset)
 {
 	STACKTRACE
    int iFolderEDF = -1;
@@ -91,28 +91,28 @@ bool FolderGet(EDF *pData, int *iFolderID, char **szFolderName, int iSearchType,
 }
 
 // Get folder from name
-int FolderGet(EDF *pData, char *&szFolderName, bool bReset)
+int FolderGetFromName(EDF *pData, const char *szFolderName, bool bReset)
 {
 	STACKTRACE
    int iFolderID = -1;
 
    // debug("FolderGet entry %s\n", szFolderName);
 
-   FolderGet(pData, &iFolderID, &szFolderName, 0, bReset);
+   InternalFolderGet(pData, &iFolderID, (char **) &szFolderName, 0, bReset);
 
    // debug("FolderGet exit %d\n", iFolderID);
    return iFolderID;
 }
 
 // Get folder from ID
-bool FolderGet(EDF *pData, int iFolderID, char **szFolderName, bool bReset)
+bool FolderGetFromId(EDF *pData, int iFolderID, char **szFolderName, bool bReset)
 {
 	STACKTRACE
    bool bReturn = false;
 
    // debug("FolderGet entry %d\n", iFolderID);
 
-   bReturn = FolderGet(pData, &iFolderID, szFolderName, 1, bReset);
+   bReturn = InternalFolderGet(pData, &iFolderID, szFolderName, 1, bReset);
 
    // debug("FolderGet exit %s\n", BoolStr(bReturn));
    return bReturn;

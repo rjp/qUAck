@@ -16,7 +16,7 @@
 #ifndef _CLIUSER_H_
 #define _CLIUSER_H_
 
-int UserGet(EDF *pData, char *&szUserName, bool bReset = false);
-bool UserGet(EDF *pData, int iUserID, char **szUserName = NULL, bool bReset = false, long lDate = -1);
+int UserGetFromName(EDF *pData, const char *szUserName, bool bReset = false);
+bool UserGetFromId(EDF *pData, int iUserID, char **szUserName = NULL, bool bReset = false, long lDate = -1);
 
 #endif

@@ -113,7 +113,7 @@ int MessageCount();
 void NewFeatures();
 bool ServiceActivate(EDF *pData);
 
-bool CreateUserMenu(bool bLoggedIn, char **szUsername, char **szPassword);//, EDF *pSystemList);
+bool CreateUserMenu(char **szUsername, char **szPassword);//, EDF *pSystemList);
 
 bool TalkMenu(int iChannelID);
 

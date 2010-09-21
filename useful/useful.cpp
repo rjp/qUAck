@@ -141,7 +141,7 @@ long bytes::Length()
    return m_lLength;
 }
 
-long bytes::Append(char *szValue)
+long bytes::Append(const char *szValue)
 {
    return Append((byte *)szValue, strlen(szValue));
 }

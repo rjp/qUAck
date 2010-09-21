@@ -26,11 +26,20 @@
 #include <math.h>
 #endif
 
-#if 1
+#if 0
 #include <ncursesw/ncurses.h>
 #include <ncursesw/term.h>
 #include <locale.h>
 #include <math.h>
+#endif
+
+#ifdef __APPLE__
+#include <curses.h>
+#include <ncurses.h>
+#include <utmpx.h>
+#define QUACK_UTMPTYPE utmpx
+#else
+#define QUACK_UTMPTYPE utmp
 #endif
 
 #include <stdio.h>
@@ -91,12 +100,12 @@ CmdInput *CmdInputLoop(int iMenuStatus, CmdInput *pInput, byte *pcInput, byte **
    return m_szClientName;
 } */
 
-char *CLIENT_SUFFIX()
+const char *CLIENT_SUFFIX()
 {
    return "";
 }
 
-char *CLIENT_PLATFORM()
+const char *CLIENT_PLATFORM()
 {
    return " (Unix)";
 }
@@ -238,7 +247,7 @@ bool CmdLocal()
    return true;
 }
 
-char *CmdUsername()
+const char *CmdUsername()
 {
    return NULL;
 }
@@ -618,23 +627,23 @@ void CmdRedraw(bool bFull)
 
 void CmdBack(int iNumChars)
 {
-   while(iNumChars > 0 && stdscr->_curx > 0)
+   while(iNumChars > 0 && getcurx(stdscr) > 0)
    {
-      move(stdscr->_cury, stdscr->_curx - 1);
+      move(getcury(stdscr), getcurx(stdscr) - 1);
       iNumChars--;
    }
 }
 
 void CmdReturn()
 {
-   if(stdscr->_cury == LINES - 1)
+   if(getcury(stdscr) == LINES - 1)
    {
       scroll(stdscr);
-      move(stdscr->_cury, 0);
+      move(getcury(stdscr), 0);
    }
    else
    {
-      move(stdscr->_cury + 1, 0);
+      move(getcury(stdscr) + 1, 0);
    }
 }
 
@@ -826,13 +835,13 @@ bool procstat(int iPID, int *iPPID, int *iSession)
 
    return true;
 }
+#endif
 
-utmp *utmpscan(int iSession)
+QUACK_UTMPTYPE *utmpscan(int iSession)
 {
    int iTTYPos = 0;
    bool bFound = false;
    char *szTTY = NULL;
-   struct utmp *pEntry = NULL;
 
    debug(DEBUGLEVEL_INFO, "utmpscan entry %d\n", iSession);
 
@@ -855,6 +864,23 @@ utmp *utmpscan(int iSession)
    }
 
 #ifndef CYGWIN
+#ifdef __APPLE__
+   return NULL; // SGD - FIXME, lots of assumptions made about UTMP in qUAck
+   struct utmpx *pEntry = NULL;
+   while(bFound == false && (pEntry = getutxent()) != NULL)
+   {
+      if((iSession != -1 && pEntry->ut_pid == iSession) || (iSession == -1 && stricmp(szTTY, pEntry->ut_id) == 0))
+      {
+         debug(DEBUGLEVEL_INFO, "utmpscan %d, '%s'\n", iSession, pEntry->ut_host);
+
+         bFound = true;
+      }
+   }
+
+   endutxent();
+
+#else
+   struct utmp *pEntry = NULL;
    while(bFound == false && (pEntry = getutent()) != NULL)
    {
       if((iSession != -1 && pEntry->ut_pid == iSession) || (iSession == -1 && stricmp(szTTY, pEntry->ut_id) == 0))
@@ -872,7 +898,7 @@ utmp *utmpscan(int iSession)
    return pEntry;
 }
 
-bool ProxyHostEntry(EDF *pEDF, struct utmp *pEntry)
+bool ProxyHostEntry(EDF *pEDF, struct QUACK_UTMPTYPE *pEntry)
 {
    char *szAddress = NULL;
 
@@ -881,7 +907,11 @@ bool ProxyHostEntry(EDF *pEDF, struct utmp *pEntry)
       if(strlen(pEntry->ut_host) > 0)
       {
 #ifndef CYGWIN
+#ifdef __APPLE__
+         szAddress = NULL; // SGD - FIXMED UTMP ASSUPUTIONS
+#else
          szAddress = Conn::AddressToString(ntohl(pEntry->ut_addr_v6[0]));
+#endif
 #else
          szAddress = Conn::AddressToString(ntohl(pEntry->ut_addr));
 #endif
@@ -921,7 +951,7 @@ bool ProxyHost(EDF *pEDF)
 
 #ifndef FreeBSD
    int iPID = 0, iPPID = 0, iSession = 0, iPrevSession = 0;
-   struct utmp *pEntry = NULL;
+   struct QUACK_UTMPTYPE *pEntry = NULL;
 
    // printf("tty %s\n", ttyname(0));
 
@@ -1024,7 +1054,7 @@ bool CmdBrowse(const char *szURI)
    return true;
 }
 
-char CmdDirSep()
+const char CmdDirSep()
 {
    return '/';
 }
