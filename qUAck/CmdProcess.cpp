@@ -20,8 +20,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-#include "Conn/EDFConn.h"
-
+#include "../EDF/EDF.h"
 #include "ua.h"
 
 #include "client/CliFolder.h"
@@ -38,6 +37,8 @@
 int m_iFolderID = -1, m_iMessageID = -1, m_iAddReplyID = -1, m_iAddReplyFolder = -1;
 int m_iChannelID = -1;
 
+// THis processes an 'announce' message from the server
+// SGD
 bool CmdAnnounceProcess(EDF *pAnnounce)
 {
    STACKTRACE
@@ -64,16 +65,6 @@ bool CmdAnnounceProcess(EDF *pAnnounce)
    {
       CmdRefreshFolders(false);
    }
-   /* else if(stricmp(szAnnounce, MSG_FOLDER_SUBSCRIBE) == 0 || stricmp(szAnnounce, MSG_FOLDER_SUBSCRIBE) == 0)
-   {
-      m_pUser->Get(NULL, &iUserID);
-
-      pAnnounce->GetChild("userid", &iValue);
-      if(iValue == iUserID)
-      {
-         CmdRefreshFolders();
-      }
-   } */
    else if(stricmp(szAnnounce, MSG_FOLDER_EDIT) == 0)
    {
       debugEDFPrint("CmdAnnounceProcess folder edit", pAnnounce);
@@ -1033,7 +1024,7 @@ bool CmdMessageAdd(int iReplyID, int iFolderID, int iReplyFolder, int iFromID, c
    debugEDFPrint("CmdMessageAdd request", pRequest, EDFElement::EL_ROOT | EDFElement::EL_CURR | EDFElement::PR_SPACE | EDFElement::PR_BIN);
    if(CmdRequest(iReplyFolder == 0 ? MSG_BULLETIN_ADD : MSG_MESSAGE_ADD, pRequest, &pReply) == false)
    {
-      CmdEDFPrint("CmdMessageAddReply failed", pReply);
+      // CmdEDFPrint("CmdMessageAddReply failed", pReply);
    }
    delete pReply;
 
@@ -1462,8 +1453,6 @@ char CmdUserPageTo(bool bReply, EDF *pReply, int iToID, bool bRetro, int iAccess
    }
    else if(UserGetFromId(m_pUserList, iToID, &szFromName, false) == true)
    {
-      // CmdEDFPrint("CmdUserPageTo user", m_pUserList, EDFElement::EL_CURR | EDFElement::PR_SPACE);
-
       m_pUserList->GetChild("status", &iStatus);
       if(mask(iStatus, LOGIN_ON) == false)
       {
@@ -1480,9 +1469,6 @@ char CmdUserPageTo(bool bReply, EDF *pReply, int iToID, bool bRetro, int iAccess
 
    if(mask(iStatus, LOGIN_NOCONTACT) == true || mask(iStatus, LOGIN_SHADOW) == true)
    {
-		/* sprintf(szWrite, "\0374%s\0370 cannot be paged\n", RETRO_NAME(szFromName));
-      CmdWrite(szWrite); */
-
       sprintf(szPrefix1, "Unpageable: \0374%s\0370", RETRO_NAME(szFromName));
       sprintf(szPrefix2, "\0374%s\0370 cannot be paged", RETRO_NAME(szFromName));
 
@@ -1495,7 +1481,6 @@ char CmdUserPageTo(bool bReply, EDF *pReply, int iToID, bool bRetro, int iAccess
    {
       if(iTimeBusy != -1)
       {
-         // StrTime(szBusy, STRTIME_TIME, iTimeBusy, '4', " (last active ", ")");
          StrValue(szDate, STRVALUE_TIMESU, CmdInput::MenuTime() - iTimeBusy, '4');
          sprintf(szWrite, " (last active %s ago)", szDate);
       }
@@ -1504,22 +1489,6 @@ char CmdUserPageTo(bool bReply, EDF *pReply, int iToID, bool bRetro, int iAccess
          strcpy(szWrite, "");
       }
 
-      /* if(szStatusMsg != NULL)
-      {
-         if(szStatusMsg[0] == ':')
-         {
-            sprintf(szWrite, "Busy%s: \0374%s\0370 %s\n", szBusy, RETRO_NAME(szFromName), (char *)&szStatusMsg[1]);
-         }
-         else
-         {
-            sprintf(szWrite, "\0374%s\0370 is busy%s. %s\n", RETRO_NAME(szFromName), szBusy, szStatusMsg);
-         }
-      }
-      else
-      {
-         sprintf(szWrite, "\0374%s\0370 is busy%s\n", RETRO_NAME(szFromName), szBusy);
-      }
-      CmdWrite(szWrite); */
 
       sprintf(szPrefix1, "Busy%s: \0374%s\0370", szWrite, RETRO_NAME(szFromName));
       sprintf(szPrefix2, "\0374%s\0370 is busy%s", RETRO_NAME(szFromName), szWrite);
@@ -1558,10 +1527,6 @@ char CmdUserPageTo(bool bReply, EDF *pReply, int iToID, bool bRetro, int iAccess
          strcat(szWrite, "\n");
          CmdWrite(szWrite);
       }
-      /* else
-      {
-         cOption = 'x';
-      } */
    }
    else if(bReply == false && pReply == NULL)
    {
@@ -1730,22 +1695,11 @@ bool CmdUserPage(EDF *pAnnounce, int iFromID, bool bCustomTo, const char *szToNa
 
    if(mask(iConfirm, CONFIRM_BUSY_PAGER) == true && mask(CmdInput::MenuStatus(), LOGIN_BUSY) == true && CmdYesNo("Turn your pager on", true) == true)
    {
-      pRequest = new EDF();
-      pRequest->Add("login");
-      pRequest->AddChild("status", 0);
-      pRequest->Parent();
-
-      // EDFPrint("MainMenu busy request", pRequest, false);
-      CmdRequest(MSG_USER_EDIT, pRequest);
-      CmdUserReset();
+      m_pGrynLayer->setBusyStatus(false);
    }
 
    if(pAnnounce != NULL)
    {
-      /* if(pAnnounce->Child("message") == true)
-      {
-         bMessage = true;
-      } */
       pAnnounce->Get(&szMessage);
       if(stricmp(szMessage, "message") == 0)
       {
@@ -1756,10 +1710,6 @@ bool CmdUserPage(EDF *pAnnounce, int iFromID, bool bCustomTo, const char *szToNa
       pAnnounce->GetChild("fromid", &iFromID);
       pAnnounce->GetChild("fromname", &szFromName);
       CmdUserPageView(pAnnounce, "From", szFromName);
-      /* if(bMessage == true)
-      {
-         pAnnounce->Parent();
-      } */
 
       cOption = CmdUserPageTo(true, NULL, iFromID, mask(iRetro, RETRO_NAMES), iAccessLevel, pAnnounce);
       if(cOption == 'x')
@@ -1776,7 +1726,7 @@ bool CmdUserPage(EDF *pAnnounce, int iFromID, bool bCustomTo, const char *szToNa
       if(bCustomTo == true && CmdVersion("2.6") >= 0)
       {
          m_pServiceList->Root();
-         CmdEDFPrint("CmdUserPage services", m_pServiceList);
+         // CmdEDFPrint("CmdUserPage services", m_pServiceList);
 
          iServiceID = CmdLineTab("Name of service", CmdServiceTab, m_pServiceList);
          if(iServiceID == -1)
@@ -1812,7 +1762,7 @@ bool CmdUserPage(EDF *pAnnounce, int iFromID, bool bCustomTo, const char *szToNa
                      pRequest->AddChild("password", szServicePassword);
                      if(CmdRequest(MSG_SERVICE_SUBSCRIBE, pRequest, &pReply) == false)
                      {
-                        CmdEDFPrint("CmdUserPage request failed", pReply);
+                        //CmdEDFPrint("CmdUserPage request failed", pReply);
 
                         delete pReply;
 
@@ -2365,7 +2315,7 @@ bool CmdChannelLeave()
    }
    else
    {
-      debugEDFPrint("CmdChannelLeave request failed", pReply);
+      // debugEDFPrint("CmdChannelLeave request failed", pReply);
    }
 
    delete pReply;
@@ -2406,7 +2356,7 @@ bool CmdChannelJoin(int iChannelID, const char *szPrompt)
 
    if(CmdRequest(MSG_CHANNEL_SUBSCRIBE, pRequest, &pReply) == false)
    {
-      CmdEDFPrint("CmdChannelJoin request failed", pReply);
+      // CmdEDFPrint("CmdChannelJoin request failed", pReply);
 
       delete pReply;
 

@@ -6,7 +6,7 @@
 #ifndef _USEFUL_H_
 #define _USEFUL_H_
 
-typedef unsigned char byte;
+#include "../gryntypes.h"
 #ifdef FREEBSD
 #define bool int
 #endif

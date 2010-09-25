@@ -77,7 +77,6 @@ void CmdUserFolder(EDF *pReply);
 void CmdUserStats(EDF *pReply);
 void CmdUserPageView(EDF *pPage, const char *szType, const char *szUser, const char *szDateField = NULL, const char *szTextField = NULL, bool bTopDashes = true);
 bool CmdCentre(const char *szText, char cColour = '\0');
-void CmdBanner(EDF *pReply);
 void CmdTaskList(EDF *pReply);
 
 #endif

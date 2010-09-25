@@ -25,7 +25,7 @@
 #include <unistd.h>
 #include <netdb.h>
 
-#include "Conn/EDFConn.h"
+#include "../EDF/EDF.h"
 
 #include "ua.h"
 
