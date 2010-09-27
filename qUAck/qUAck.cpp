@@ -24,7 +24,7 @@
 #include <sys/stat.h>
 #endif
 
-#include "Conn/EDFConn.h"
+#include "../EDF/EDF.h"
 
 #include "ua.h"
 
@@ -64,9 +64,8 @@ int m_iRequest = 0, m_iRefreshMessagesID = 0;
 #define CLI_REFRESH_USERS 4
 #define CLI_USER_RESET 8
 
-bool ProxyHost(EDF *pEDF);
 
-EDFConn *m_pClient = NULL;
+GrynLayer *m_pGrynLayer = NULL;
 
 EDF **m_pAnnounces = NULL;
 int m_iNumAnnounces = 0;
@@ -76,7 +75,6 @@ EDF *m_pUser = NULL, *m_pPaging = NULL;
 EDF *m_pFolderList = NULL, *m_pFolderNav = NULL, *m_pMessageList = NULL, *m_pMessageView = NULL;
 EDF *m_pChannelList = NULL, *m_pUserList = NULL;
 EDF *m_pServiceList = NULL;
-EDF *m_pSystemList = NULL;
 
 bool m_bThinPipe = false;
 bool m_bScreenSize = false;
@@ -192,14 +190,15 @@ void CmdShutdown(const char *szError, bool bDeleteLog, bool bSupressError)
 		}
 	}
 
-   if(m_pClient->State() == Conn::OPEN)
+   if(m_pGrynLayer != NULL)
    {
       debug(DEBUGLEVEL_INFO, "CmdShutdown disconnect\n");
-      m_pClient->Disconnect();
+      m_pGrynLayer->Disconnect();
    }
+   
 
    debug(DEBUGLEVEL_DEBUG, "CmdShutdown delete conn / client\n");
-   delete m_pClient;
+   delete m_pGrynLayer;
 
    debug(DEBUGLEVEL_DEBUG, "CmdShutdown clear read buffer\n");
    for(iAnnounceNum = 0; iAnnounceNum < m_iNumAnnounces; iAnnounceNum++)
@@ -309,10 +308,6 @@ bool CmdRefreshUsers(bool bIdleReset)
    bLoop = m_pUserList->Child("user");
    while(bLoop == true)
    {
-      /* m_pUserList->Get(NULL, &iUserID);
-      m_pUserList->GetChild("name", &szUserName);
-      debug("CmdRefreshUsers %d %s\n", iUserID, szUserName);
-      delete[] szUserName; */
       if(CmdVersion("2.5") < 0 && m_pUserList->GetChild("busymsg", &szStatusMsg) == true)
       {
          m_pUserList->SetChild("statusmsg", szStatusMsg);
@@ -654,9 +649,7 @@ void CmdRefresh(bool bUserReset)
 {
    STACKTRACE
    double dTick = 0;
-   long lRecieved = 0;
 
-   lRecieved = (long)m_pClient->Recieved();
    dTick = gettick();
 
    if(bUserReset == true)
@@ -668,8 +661,6 @@ void CmdRefresh(bool bUserReset)
    CmdRefreshChannels();
    CmdRefreshServices();
 
-   lRecieved = (long)m_pClient->Recieved() - lRecieved;
-   debug(DEBUGLEVEL_INFO, "CmdRefresh completed in %ld ms with extra %ld bytes recieved\n", tickdiff(dTick), lRecieved);
 }
 
 void CmdColours(bool bChild)
@@ -906,6 +897,9 @@ int CmdAnnounce(EDF *pAnnounce, bool bAddToBuffer, bool bReturn)
    return iReturn;
 }
 
+
+// Main LOOP!!
+// SGD
 CmdInput *CmdInputLoop(int iMenuStatus, CmdInput *pInput, byte *pcInput, byte **pszInput)
 {
    STACKTRACE
@@ -927,17 +921,11 @@ CmdInput *CmdInputLoop(int iMenuStatus, CmdInput *pInput, byte *pcInput, byte **
 
    STACKTRACEUPDATE
 
-   if(m_pClient != NULL)
+   if(m_pGrynLayer != NULL)
    {
-      lTimeout = m_pClient->Timeout();
-      m_pClient->Timeout(0);
+      lTimeout = m_pGrynLayer->getTimeout();
+      m_pGrynLayer->setTimeout(0);
    }
-
-   /* if(iMenuStatus != -1 && m_iNumAnnounces > 0)
-   {
-      printf("CmdInputLoop %d announcements\n", m_iNumAnnounces);
-      bShow = false;
-   } */
 
    while(bLoop == true)
    {
@@ -951,12 +939,6 @@ CmdInput *CmdInputLoop(int iMenuStatus, CmdInput *pInput, byte *pcInput, byte **
          {
             szReturn = "";
          }
-
-         /* if(bShow == true)
-         {
-            pInput->Show();
-            bShow = false;
-         } */
 
          for(iAnnounceNum = 0; iAnnounceNum < m_iNumAnnounces; iAnnounceNum++)
          {
@@ -987,9 +969,9 @@ CmdInput *CmdInputLoop(int iMenuStatus, CmdInput *pInput, byte *pcInput, byte **
          bShow = false;
       }
 
-      if(m_pClient != NULL)
+      if(m_pGrynLayer != NULL)
       {
-         pRead = m_pClient->Read();
+         pRead = m_pGrynLayer->getEDF()->Read();
          if(pRead != NULL)
          {
             STACKTRACEUPDATE
@@ -1029,7 +1011,7 @@ CmdInput *CmdInputLoop(int iMenuStatus, CmdInput *pInput, byte *pcInput, byte **
             delete[] szType;
             // delete pRead;
          }
-         else if(m_pClient->State() != Conn::OPEN)
+         else if(!m_pGrynLayer->IsConnected())
          {
             CmdShutdown("Connection to host lost");
          }
@@ -1102,7 +1084,7 @@ bool CmdRequest(const char *szRequest, EDF *pRequest, bool bDelete, EDF **pReply
    char *szType = NULL, *szMessage = NULL;
    EDF *pRead = NULL, *pTemp = NULL;
    EDFElement *pElement = NULL;
-   double dEntry = 0, dWrite = 0, dRead = 0, dInput = 0, dRefresh = 0, dRecieved = 0, dLoop = 0, dProcess = 0;
+   double dEntry = 0, dWrite = 0, dRead = 0, dInput = 0, dRefresh = 0, dLoop = 0, dProcess = 0;
    long lWrite = 0, lRead = 0, lInput = 0, lRefresh = 0;
 
    debug(DEBUGLEVEL_INFO, "CmdRequest entry %s %p %s %p %s\n", szRequest, pRequest, BoolStr(bDelete), pReply, BoolStr(bSupressError));
@@ -1125,7 +1107,7 @@ bool CmdRequest(const char *szRequest, EDF *pRequest, bool bDelete, EDF **pReply
    pTemp->Set("request", szRequest);
    debugEDFPrint(m_iLogLevel >= 1 ? 0 : DEBUGLEVEL_DEBUG, "CmdRequest sending", pTemp);
    dWrite = gettick();
-   if(m_pClient->Write(pTemp) == false)
+   if (m_pGrynLayer->getEDF()->Write(pTemp) == false)
    {
       debug(DEBUGLEVEL_ERR, "CmdRequest write failed\n");
       CmdShutdown("Unable to write request");
@@ -1145,42 +1127,26 @@ bool CmdRequest(const char *szRequest, EDF *pRequest, bool bDelete, EDF **pReply
 
    // debug("CmdRequest timeout %ld ms\n", m_pClient->Timeout());
 
-   lTimeout = m_pClient->Timeout();
-   m_pClient->Timeout(100);
+   lTimeout = m_pGrynLayer->getTimeout();
+   m_pGrynLayer->setTimeout(100);
 
-   // dRead = gettick();
-
-   dRecieved = m_pClient->Recieved();
 
    dLoop = gettick();
 
-   // pRead = new EDF();
    while(bLoop == true)
    {
       // printf("CmdRequest read loop\n");
 
       // pRead = NULL;
-      /* iReads++;
-      if(iReads % 100 == 0)
-      {
-         debug("CmdRequest %d reads after %ld ms\n", iReads, tickdiff(dLoop));
-      } */
 
       dRead = gettick();
-      pRead = m_pClient->Read();
+      pRead = m_pGrynLayer->getEDF()->Read();
       lRead += tickdiff(dRead);
-      // if(m_pClient->Read(pRead, &iReadLen) == true)
+
       if(pRead != NULL)
       {
          dProcess = gettick();
-         // EDFPrint("CmdRequest read", pRead);
-			// debug("CmdRequest read succeeded after %ld ms\n", tickdiff(dRead));
-
-         // debug("CmdRequest parsed %d byte EDF\n", iReadLen);
-         // debugEDFPrint(m_iLogLevel >= 1 ? 0 : DEBUGLEVEL_DEBUG, "CmdRequest read", pRead);
          STACKTRACEUPDATE
-
-         // lReadDiff = tickdiff(dRead);
 
          pRead->Get(&szType, &szMessage);
          if(stricmp(szType, "reply") == 0)
@@ -1193,15 +1159,15 @@ bool CmdRequest(const char *szRequest, EDF *pRequest, bool bDelete, EDF **pReply
             bLoop = false;
             m_bRequestWait = false;
 
-			   pElement = m_pUser->GetCurr();
-			   m_pUser->Root();
-			   if(m_pUser->Child("login") == true)
-			   {
-				   m_pUser->GetChild("requests", &iRequests);
-				   iRequests++;
-				   m_pUser->SetChild("requests", iRequests);
-			   }
-			   m_pUser->SetCurr(pElement);
+	   pElement = m_pUser->GetCurr();
+	   m_pUser->Root();
+	   if(m_pUser->Child("login") == true)
+	   {
+		   m_pUser->GetChild("requests", &iRequests);
+		   iRequests++;
+		   m_pUser->SetChild("requests", iRequests);
+	   }
+	   m_pUser->SetCurr(pElement);
 
             if(stricmp(szMessage, szRequest) == 0)
             {
@@ -1212,12 +1178,6 @@ bool CmdRequest(const char *szRequest, EDF *pRequest, bool bDelete, EDF **pReply
                debugEDFPrint("CmdRequest non-request reply back", pRead);
             }
 
-            /* if(bReplyShow == true)
-            {
-               STACKTRACEUPDATE
-
-               CmdReplyShow(pRead);
-            } */
             if(pReply != NULL)
             {
                *pReply = pRead;
@@ -1247,32 +1207,21 @@ bool CmdRequest(const char *szRequest, EDF *pRequest, bool bDelete, EDF **pReply
          delete[] szType;
          delete[] szMessage;
 
-         /* if(tickdiff(dProcess) > 250)
-         {
-            sprintf(szDebug, "CmdRequest process %ld ms\n", tickdiff(dProcess));
-            CmdWrite(szDebug);
-         } */
       }
-      /* else if(tickdiff(dRead) > 250)
-      {
-			sprintf(szDebug, "CmdRequest read failed after %ld ms, (state=%d), %g bytes\n", tickdiff(dRead), m_pClient->State(), m_pClient->Recieved() - dRecieved);
-         CmdWrite(szDebug);
-         debug(szDebug);
-         // lReadTotal += tickdiff(dRead);
-      } */
 
-      if(m_pClient->State() != Conn::OPEN) // && pRead != NULL)
+      if(!m_pGrynLayer->IsConnected()) 
       {
          // debug("CmdRequest delete read\n");
          delete pRead;
          pRead = NULL;
 
          strcpy(szShutdown, "Disconnected");
-         if(m_pClient->Error() != NULL)
+         std::string errorMessage = m_pGrynLayer->getErrorMessage();
+         if (errorMessage.length()>0)
          {
-            debug(DEBUGLEVEL_ERR, "CmdRequest adding error %s\n", m_pClient->Error());
+            debug(DEBUGLEVEL_ERR, "CmdRequest adding error %s\n", errorMessage.c_str());
             strcat(szShutdown, ". ");
-            strcat(szShutdown, m_pClient->Error());
+            strcat(szShutdown, errorMessage.c_str());
          }
          CmdShutdown(szShutdown, true, bSupressError);
       }
@@ -1280,26 +1229,7 @@ bool CmdRequest(const char *szRequest, EDF *pRequest, bool bDelete, EDF **pReply
       // debug("CmdRequest single loop %ld ms\n", tickdiff(dLoop));
    }
 
-   /* if(tickdiff(dLoop) > 250)
-   {
-      debug("CmdRequest loop %ld ms\n", tickdiff(dLoop));
-   } */
 
-   // lRead = tickdiff(dRead);
-
-   /* if(pReply == NULL && pRead != NULL)
-   {
-      // debug("CmdRequest delete read\n");
-      delete pRead;
-      pRead = NULL;
-   } */
-
-   STACKTRACEUPDATE
-
-   /* if(bReplyShow == true)
-   {
-      CmdAnnounceFlush("CmdRequest", true);
-   } */
 
    STACKTRACEUPDATE
 
@@ -1333,7 +1263,7 @@ bool CmdRequest(const char *szRequest, EDF *pRequest, bool bDelete, EDF **pReply
 
    sprintf(szDebug, "%s, nr=%d na=%d, rd=%ld / rf=%ld / fn=%ld ms", szRequest, iReads, iAnnounces, lRead, lRefresh, tickdiff(dEntry));
 
-   m_pClient->Timeout(lTimeout);
+   m_pGrynLayer->setTimeout(lTimeout);
 
    debug(DEBUGLEVEL_INFO, "CmdRequest exit %s, %s\n", szRequest, szDebug);
    return bReturn;
@@ -1662,21 +1592,13 @@ int CmdVersion(const char *szVersion)
 {
    STACKTRACE
    int iReturn = 0;
-   char *szCompare = NULL;
 
    // debug("CmdVersion %s\n", szVersion);
 
-   if(m_pSystemList == NULL)
-   {
-      CmdRequest(MSG_SYSTEM_LIST, &m_pSystemList);
-   }
+   std::string protocol = m_pGrynLayer->getProtocol();
 
-   m_pSystemList->GetChild("protocol", &szCompare);
-
-   iReturn = stricmp(szCompare, szVersion);
+   iReturn = stricmp(protocol.c_str(), szVersion);
    // debug("CmdVersion %s -vs- %s = %d\n", szCompare, szVersion, iReturn);
-
-   delete[] szCompare;
 
    return iReturn;
 }
@@ -1688,20 +1610,19 @@ char *CmdEditor()
 
 int main(int argc, char **argv)
 {
-   int iArgNum = 0, iPort = 0, iTimeOff = -1, iBuildNum = 0, iAccessLevel = LEVEL_NONE, iFolderID = 0, iValue = 0, iSystemTime = 0, iAttachmentSize = 0;
-   int iUserType = 0, iNumEdits = 0, iGiveUp = 10, iLoop = 0, iMsgMark = 0, iConfigHighlight = -1, iSubType = 0, iStatus = 0, iDebugLevel = DEBUGLEVEL_INFO;
+   int iArgNum = 0, iPort = 0, iTimeOff = -1, iAccessLevel = LEVEL_NONE, iFolderID = 0, iValue = 0, iAttachmentSize = 0;
+   int iUserType = 0, iNumEdits = 0, iMsgMark = 0, iConfigHighlight = -1, iSubType = 0, iStatus = 0, iDebugLevel = DEBUGLEVEL_INFO;
    bool bSecure = false, bBusy = false, bSilent = false, bShadow = false, bLoop = false, bFolderCheck = true, bRetro = false, bUsePID = false, bLoggedIn = false, bMarkingField = false;
    bool bNew = false, bBrowserWait = false;
-   double dTick = 0;
    char szWrite[200], szError[200];
    char *szConfig = NULL;
    char *szServer = NULL;
    char *szUsername = NULL;
    char *szPassword = NULL;
    char *szDebugDir = NULL, *szReply = NULL, *szName = NULL;
-   char *szServerName = NULL;
-   char *szBuildDate = NULL, *szFolder = NULL, *szCertFile = NULL, *szBrowser = NULL, *szAttachmentDir = NULL;
-   EDF *pFile = NULL, *pRequest = NULL, *pRead = NULL, *pReply = NULL, *pProxy = NULL, *pSystem = NULL;
+   char *szFolder = NULL, *szBrowser = NULL, *szAttachmentDir = NULL;
+   EDF *pFile = NULL, *pRequest = NULL, *pReply = NULL;
+
 
 #ifdef LEAKTRACEON
    leakSetStack1();
@@ -1929,7 +1850,7 @@ int main(int argc, char **argv)
 #ifdef WIN32
    debugopen("qUAck.txt");
 #else
-   char szDebug[100];
+   char szDebug[200];
    sprintf(szDebug, "%s/qUAck", szDebugDir != NULL ? szDebugDir : m_szHome);
    if(bUsePID == true)
    {
@@ -1974,123 +1895,36 @@ int main(int argc, char **argv)
       bSecure = CmdYesNo("Use secure connection", false);
 #endif
    }
-
-   m_pClient = new EDFConn();
-   m_pClient->Timeout(50);
-
+   m_pGrynLayer = new GrynLayer();
+   m_pGrynLayer->setTimeout(50);
+ 
    debug("qUAck mem0: %ld bytes\n", memusage());
 
-   dTick = gettick();
    debug(DEBUGLEVEL_INFO, "connecting to %s / %d / %s\n", szServer, iPort, BoolStr(bSecure));
-   if(m_pClient->Connect(szServer, iPort, bSecure, szCertFile) == false)
+   if (!m_pGrynLayer->Connect(szServer, iPort)) //, bSecure, szCertFile))
    {
-      sprintf(szError, "Unable to connect to %s (port %d). %s", szServer, iPort, m_pClient->Error());
+      sprintf(szError, "Unable to connect to %s (port %d). %s", szServer, iPort, m_pGrynLayer->getErrorMessage().c_str());
       CmdShutdown(szError);
-   }
+   } 
 
-   debug("qUAck mem1: %ld bytes\n", memusage());
 
-   iLoop = time(NULL);
-   while(m_pClient->State() == Conn::OPEN && m_pClient->Connected() == false)
+
+   CmdInput::MenuTime(m_pGrynLayer->getSystemTime());
+
+
+
+   const std::string &bannerText = m_pGrynLayer->getBanner();
+   if(bannerText.length()>0)
    {
-      pRead = m_pClient->Read();
-
-      /* if(m_pClient->State() != Conn::OPEN)
-      {
-         CmdShutdown("connection lost");
-      } */
-
-      if(time(NULL) > iLoop + iGiveUp)
-      {
-         sprintf(szWrite, "Could not enable EDF in %d seconds, giving up", iGiveUp);
-         CmdShutdown(szWrite);
-      }
+      CmdCentre(bannerText.c_str());
    }
+   CmdWrite("\n\n");
 
-   debug("qUAck mem2: %ld bytes\n", memusage());
-
-   if(m_pClient->State() != Conn::OPEN)
-   {
-      CmdShutdown("Disconnected");
-   }
-   debug(DEBUGLEVEL_DEBUG, "Diff after connection %ld ms\n", tickdiff(dTick));
-
-   CmdRequest(MSG_SYSTEM_LIST, &pSystem);
-
-   pSystem->GetChild("systemtime", &iSystemTime);
-   pSystem->GetChild("version", &m_szVersion);
-	CmdInput::MenuTime(iSystemTime);
-
-   pProxy = new EDF();
-   debug(DEBUGLEVEL_DEBUG, "Calling proxy hosting (version %s)\n", m_szVersion);
-   ProxyHost(pProxy);
 
    if(szUsername == NULL)
    {
       szUsername = strmk(CmdUsername());
    }
-
-#ifdef UNIX
-#ifdef BUILDDAEMON
-   // if(szUsername == NULL)
-   {
-      bool bCheck = false;
-      char *szCheck = NULL, *szRun = NULL;
-      char szExample[1000];
-
-      if(pProxy->GetChild("hostname", &szCheck) == true && szCheck != NULL)
-      {
-         debug("Checking host %s\n", szCheck);
-
-         if(strlen(szCheck) >= 17 && strcmp(szCheck + strlen(szCheck) - 17, "compsoc.man.ac.uk") == 0 && strcmp(szCheck, "mrtall.compsoc.man.ac.uk") != 0)
-         {
-            bCheck = true;
-            szRun = "/usr/local/bin/qUAck";
-         }
-         else if(strlen(szCheck) > 12 && strcmp(szCheck + strlen(szCheck) - 12, "cs.man.ac.uk") == 0)
-         {
-            bCheck = true;
-            szRun = "~willija8/bin/qUAck";
-         }
-         /* else if(stricmp(szCheck, "riffraff.plig.net") == 0)
-         {
-            bCheck = true;
-            szRun = "~dsf/bin/qUAck";
-         }
-         else if(stricmp(szCheck, "button") == 0)
-         {
-            bCheck = true;
-            szRun = "d:\\qUAck-0.8\\bin\\qUAck.exe";
-         } */
-
-         delete[] szCheck;
-
-         if(bCheck == true)
-         {
-            CmdWrite("\nThe host you are connecting from has qUAck\nYou should use qUAck in preference to qUAckd\n");
-
-            if(CmdYesNo("Carry on anyway", true) == false)
-            {
-               strcpy(szExample, "Using qUAck\n-----------\n\nPut this in a file called .qUAckrc in your home directory:\n\n");
-               strcat(szExample, "<>\n");
-               sprintf(szExample, "%s  <server=\"%s\"/>\n  <port=%d/>\n", szExample, szServer, iPort);
-               if(CmdVersion("2.5") >= 0)
-               {
-                  strcat(szExample, "  <secure=1/>          <-- Use this for an encrypted session\n");
-               }
-               strcat(szExample, "  <username=\"...\"/>\n  <password=\"...\"/>\n");
-               sprintf(szExample, "%sThen run %s\n", szExample, szRun);
-
-               CmdShutdown(szExample);
-            }
-         }
-      }
-   }
-#endif
-#endif
-
-   CmdBanner(pSystem);
-
    do
    {
       if(szUsername == NULL)
@@ -2162,15 +1996,13 @@ int main(int argc, char **argv)
          pRequest->AddChild("status", iStatus);
       }
 
-      pRequest->AddChild(pProxy, "hostname");
-      pRequest->AddChild(pProxy, "address");
       if(iAttachmentSize > 0 || iAttachmentSize == -1)
       {
          pRequest->AddChild("attachmentsize", iAttachmentSize);
       }
 
       debug(DEBUGLEVEL_INFO, "login request, tick reset\n");
-      dTick = gettick();
+      double dTick = gettick();
       if(CmdRequest(MSG_USER_LOGIN, pRequest, false, &pReply) == true)
       {
          bLoggedIn = true;
@@ -2231,7 +2063,6 @@ int main(int argc, char **argv)
 
    debug(DEBUGLEVEL_DEBUG, "login post reply delete\n");
 
-   delete[] szServer;
    delete[] szUsername;
    delete[] szPassword;
    delete pRequest;
@@ -2256,17 +2087,12 @@ int main(int argc, char **argv)
 
    // CmdColours(true);
 
-   pSystem->GetChild("name", &szServerName);
-   // pSystemList->GetChild("version", &szServerVersion);
-   // ProtocolVersion(szServerVersion);
-   pSystem->GetChild("buildnum", &iBuildNum);
-   pSystem->GetChild("builddate", &szBuildDate);
-   sprintf(szWrite, "\0370%s Version \0373%s\0370 Build \0373%d\0370, \0373%s\0370\n\n", szServerName, m_szVersion, iBuildNum, szBuildDate);
-   CmdWrite(szWrite);
-   delete[] szServerName;
-   // delete[] szServerVersion;
-   delete[] szBuildDate;
-   delete pSystem;
+   const std::string &serverDetails = m_pGrynLayer->getServerDetails();
+   // SGD pSystem->GetChild("name", &szServerName);
+   // SGD pSystem->GetChild("buildnum", &iBuildNum);
+   // SGD pSystem->GetChild("builddate", &szBuildDate);
+   // SGD sprintf(szWrite, "\0370%s Version \0373%s\0370 Build \0373%d\0370, \0373%s\0370\n\n", serverName.c_str(), m_szVersion, iBuildNum, szBuildDate);
+   CmdWrite(serverDetails.c_str());
 
    if(m_pUser->Child("folders") == true)
    {

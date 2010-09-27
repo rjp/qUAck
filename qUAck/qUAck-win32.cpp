@@ -22,7 +22,7 @@
 
 #include "EDF/EDF.h"
 
-#include "Conn/EDFConn.h"
+#include "Conn/Conn.h"
 
 #include "CmdIO.h"
 #include "CmdIO-common.h"
@@ -594,10 +594,6 @@ void CmdWait()
    Sleep(200);
 }
 
-bool ProxyHost(EDF *pEDF)
-{
-   return false;
-}
 
 void CmdRun(const char *szProgram, bool bWait, const char *szArgs)
 {

@@ -10,7 +10,7 @@ BINARY2=../bin/qUAck-leak
 BINARY3=../bin/qUAckd
 BINARY4=../bin/qUAckw
 BINARY=$(BINARY1) $(BINARY2) $(BINARY3)
-OBJS=CmdIO.o CmdInput.o CmdMenu.o CmdProcess.o CmdShow.o CmdTable.o ../client/CliUser.o ../client/CliFolder.o ../client/CliTalk.o ../ua.o ../EDF/EDF.o ../EDF/EDFElement.o ../Conn/Conn.o ../Conn/EDFConn.o ../useful/useful.o ../useful/StackTrace.o
+OBJS=grynlayer.o CmdIO.o CmdInput.o CmdMenu.o CmdProcess.o CmdShow.o CmdTable.o ../client/CliUser.o ../client/CliFolder.o ../client/CliTalk.o ../ua.o ../EDF/EDF.o ../EDF/EDFElement.o ../Conn/Conn.o ../Conn/EDFConn.o ../useful/useful.o ../useful/StackTrace.o 
 OBJS1=$(OBJS) qUAck-unix.o qUAck.o
 OBJS2=$(OBJS) qUAck-unix.o qUAck-leak.o ../useful/LeakTrace.o
 OBJS3=$(OBJS) qUAck-daemon.o qUAckd.o
@@ -61,5 +61,7 @@ CmdMenu.o:	CmdMenu.cpp ../ua.h CmdIO.h CmdInput.h CmdMenu.h CmdMenuHelp.h CmdPro
 CmdProcess.o:	CmdProcess.cpp ../ua.h CmdIO.h CmdMenu.h CmdInput.h CmdShow.h CmdProcess.h qUAck.h
 CmdShow.o:	CmdShow.cpp ../ua.h CmdIO.h CmdInput.h CmdMenu.h CmdShow.h CmdTable.h qUAck.h
 CmdTable.o:	CmdTable.cpp CmdIO.h CmdInput.h CmdMenu.h CmdShow.h CmdTable.h
+
+grynlayer.o:	grynlayer.h grynlayer.cpp ../EDF/EDF.h ../Conn/EDFConn.h
 
 include ../Makefile.dep

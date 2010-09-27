@@ -49,7 +49,5 @@ void CmdBeep();
 void CmdRedraw(bool bFull);
 void CmdWait();
 
-void CmdEDFPrint(const char *szTitle, EDF *pEDF, int iOptions = -1);
-void CmdEDFPrint(const char *szTitle, EDF *pEDF, bool bRoot, bool bCurr);
 
 #endif
