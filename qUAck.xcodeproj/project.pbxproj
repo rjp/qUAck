@@ -1,0 +1,389 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		81650D7B125158D0003B492C /* ua.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650D79125158D0003B492C /* ua.cpp */; };
+		81650DAB125158FD003B492C /* CliFolder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650D7D125158FD003B492C /* CliFolder.cpp */; };
+		81650DAC125158FD003B492C /* CliTalk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650D7F125158FD003B492C /* CliTalk.cpp */; };
+		81650DAD125158FD003B492C /* CliUser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650D81125158FD003B492C /* CliUser.cpp */; };
+		81650DAE125158FD003B492C /* Conn.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650D84125158FD003B492C /* Conn.cpp */; };
+		81650DAF125158FD003B492C /* EDFConn.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650D86125158FD003B492C /* EDFConn.cpp */; };
+		81650DB0125158FD003B492C /* EDF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650D89125158FD003B492C /* EDF.cpp */; };
+		81650DB1125158FD003B492C /* EDFElement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650D8B125158FD003B492C /* EDFElement.cpp */; };
+		81650DB2125158FD003B492C /* CmdInput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650D8F125158FD003B492C /* CmdInput.cpp */; };
+		81650DB3125158FD003B492C /* CmdIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650D92125158FD003B492C /* CmdIO.cpp */; };
+		81650DB4125158FD003B492C /* CmdMenu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650D94125158FD003B492C /* CmdMenu.cpp */; };
+		81650DB5125158FD003B492C /* CmdProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650D97125158FD003B492C /* CmdProcess.cpp */; };
+		81650DB6125158FD003B492C /* CmdShow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650D99125158FD003B492C /* CmdShow.cpp */; };
+		81650DB7125158FD003B492C /* CmdTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650D9B125158FD003B492C /* CmdTable.cpp */; };
+		81650DB8125158FD003B492C /* grynlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650D9D125158FD003B492C /* grynlayer.cpp */; };
+		81650DB9125158FD003B492C /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = 81650D9F125158FD003B492C /* Makefile */; };
+		81650DBC125158FD003B492C /* qUAck-unix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650DA6125158FD003B492C /* qUAck-unix.cpp */; };
+		81650DBE125158FD003B492C /* qUAck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650DA8125158FD003B492C /* qUAck.cpp */; };
+		81650DCB12515924003B492C /* LeakTrace.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650DC512515924003B492C /* LeakTrace.cpp */; };
+		81650DCC12515924003B492C /* StackTrace.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650DC712515924003B492C /* StackTrace.cpp */; };
+		81650DCD12515924003B492C /* useful.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650DC912515924003B492C /* useful.cpp */; };
+		81650F121256A099003B492C /* libncurses.5.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 81650F111256A099003B492C /* libncurses.5.4.dylib */; };
+		8DD76F6A0486A84900D96B5E /* qUAck.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = C6859E8B029090EE04C91782 /* qUAck.1 */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8DD76F690486A84900D96B5E /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 8;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+				8DD76F6A0486A84900D96B5E /* qUAck.1 in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		81650D77125158D0003B492C /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
+		81650D78125158D0003B492C /* gryntypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gryntypes.h; sourceTree = "<group>"; };
+		81650D79125158D0003B492C /* ua.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ua.cpp; sourceTree = "<group>"; };
+		81650D7A125158D0003B492C /* ua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ua.h; sourceTree = "<group>"; };
+		81650D7D125158FD003B492C /* CliFolder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CliFolder.cpp; sourceTree = "<group>"; };
+		81650D7E125158FD003B492C /* CliFolder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CliFolder.h; sourceTree = "<group>"; };
+		81650D7F125158FD003B492C /* CliTalk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CliTalk.cpp; sourceTree = "<group>"; };
+		81650D80125158FD003B492C /* CliTalk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CliTalk.h; sourceTree = "<group>"; };
+		81650D81125158FD003B492C /* CliUser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CliUser.cpp; sourceTree = "<group>"; };
+		81650D82125158FD003B492C /* CliUser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CliUser.h; sourceTree = "<group>"; };
+		81650D84125158FD003B492C /* Conn.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Conn.cpp; sourceTree = "<group>"; };
+		81650D85125158FD003B492C /* Conn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Conn.h; sourceTree = "<group>"; };
+		81650D86125158FD003B492C /* EDFConn.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EDFConn.cpp; sourceTree = "<group>"; };
+		81650D87125158FD003B492C /* EDFConn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EDFConn.h; sourceTree = "<group>"; };
+		81650D89125158FD003B492C /* EDF.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EDF.cpp; sourceTree = "<group>"; };
+		81650D8A125158FD003B492C /* EDF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EDF.h; sourceTree = "<group>"; };
+		81650D8B125158FD003B492C /* EDFElement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EDFElement.cpp; sourceTree = "<group>"; };
+		81650D8C125158FD003B492C /* EDFElement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EDFElement.h; sourceTree = "<group>"; };
+		81650D8E125158FD003B492C /* build.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = build.h; sourceTree = "<group>"; };
+		81650D8F125158FD003B492C /* CmdInput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CmdInput.cpp; sourceTree = "<group>"; };
+		81650D90125158FD003B492C /* CmdInput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CmdInput.h; sourceTree = "<group>"; };
+		81650D91125158FD003B492C /* CmdIO-common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CmdIO-common.h"; sourceTree = "<group>"; };
+		81650D92125158FD003B492C /* CmdIO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CmdIO.cpp; sourceTree = "<group>"; };
+		81650D93125158FD003B492C /* CmdIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CmdIO.h; sourceTree = "<group>"; };
+		81650D94125158FD003B492C /* CmdMenu.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CmdMenu.cpp; sourceTree = "<group>"; };
+		81650D95125158FD003B492C /* CmdMenu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CmdMenu.h; sourceTree = "<group>"; };
+		81650D96125158FD003B492C /* CmdMenuHelp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CmdMenuHelp.h; sourceTree = "<group>"; };
+		81650D97125158FD003B492C /* CmdProcess.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CmdProcess.cpp; sourceTree = "<group>"; };
+		81650D98125158FD003B492C /* CmdProcess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CmdProcess.h; sourceTree = "<group>"; };
+		81650D99125158FD003B492C /* CmdShow.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CmdShow.cpp; sourceTree = "<group>"; };
+		81650D9A125158FD003B492C /* CmdShow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CmdShow.h; sourceTree = "<group>"; };
+		81650D9B125158FD003B492C /* CmdTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CmdTable.cpp; sourceTree = "<group>"; };
+		81650D9C125158FD003B492C /* CmdTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CmdTable.h; sourceTree = "<group>"; };
+		81650D9D125158FD003B492C /* grynlayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = grynlayer.cpp; sourceTree = "<group>"; };
+		81650D9E125158FD003B492C /* grynlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = grynlayer.h; sourceTree = "<group>"; };
+		81650D9F125158FD003B492C /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		81650DA0125158FD003B492C /* Makefile.in */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Makefile.in; sourceTree = "<group>"; };
+		81650DA1125158FD003B492C /* Makefile.spell */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Makefile.spell; sourceTree = "<group>"; };
+		81650DA2125158FD003B492C /* MsgCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MsgCallback.h; sourceTree = "<group>"; };
+		81650DA3125158FD003B492C /* qUAck-common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "qUAck-common.h"; sourceTree = "<group>"; };
+		81650DA6125158FD003B492C /* qUAck-unix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "qUAck-unix.cpp"; sourceTree = "<group>"; };
+		81650DA8125158FD003B492C /* qUAck.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = qUAck.cpp; sourceTree = "<group>"; };
+		81650DA9125158FD003B492C /* qUAck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = qUAck.h; sourceTree = "<group>"; };
+		81650DC512515924003B492C /* LeakTrace.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LeakTrace.cpp; sourceTree = "<group>"; };
+		81650DC612515924003B492C /* LeakTrace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LeakTrace.h; sourceTree = "<group>"; };
+		81650DC712515924003B492C /* StackTrace.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StackTrace.cpp; sourceTree = "<group>"; };
+		81650DC812515924003B492C /* StackTrace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = StackTrace.h; path = useful/StackTrace.h; sourceTree = SOURCE_ROOT; };
+		81650DC912515924003B492C /* useful.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = useful.cpp; path = useful/useful.cpp; sourceTree = SOURCE_ROOT; };
+		81650DCA12515924003B492C /* useful.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = useful.h; sourceTree = "<group>"; };
+		81650DE812515E66003B492C /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
+		81650F111256A099003B492C /* libncurses.5.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libncurses.5.4.dylib; path = usr/lib/libncurses.5.4.dylib; sourceTree = SDKROOT; };
+		8DD76F6C0486A84900D96B5E /* qUAck */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qUAck; sourceTree = BUILT_PRODUCTS_DIR; };
+		C6859E8B029090EE04C91782 /* qUAck.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = qUAck.1; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8DD76F660486A84900D96B5E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				81650F121256A099003B492C /* libncurses.5.4.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		08FB7794FE84155DC02AAC07 /* qUAck */ = {
+			isa = PBXGroup;
+			children = (
+				81650DE812515E66003B492C /* stdafx.h */,
+				81650DC412515924003B492C /* Useful */,
+				81650D7C125158FD003B492C /* client */,
+				81650D83125158FD003B492C /* Conn */,
+				81650D88125158FD003B492C /* EDF */,
+				81650D8D125158FD003B492C /* qUAck */,
+				81650D77125158D0003B492C /* config.h */,
+				81650D78125158D0003B492C /* gryntypes.h */,
+				81650D79125158D0003B492C /* ua.cpp */,
+				81650D7A125158D0003B492C /* ua.h */,
+				08FB7795FE84155DC02AAC07 /* Source */,
+				C6859E8C029090F304C91782 /* Documentation */,
+				1AB674ADFE9D54B511CA2CBB /* Products */,
+				81650F111256A099003B492C /* libncurses.5.4.dylib */,
+			);
+			name = qUAck;
+			sourceTree = "<group>";
+		};
+		08FB7795FE84155DC02AAC07 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		1AB674ADFE9D54B511CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8DD76F6C0486A84900D96B5E /* qUAck */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		81650D7C125158FD003B492C /* client */ = {
+			isa = PBXGroup;
+			children = (
+				81650D7D125158FD003B492C /* CliFolder.cpp */,
+				81650D7E125158FD003B492C /* CliFolder.h */,
+				81650D7F125158FD003B492C /* CliTalk.cpp */,
+				81650D80125158FD003B492C /* CliTalk.h */,
+				81650D81125158FD003B492C /* CliUser.cpp */,
+				81650D82125158FD003B492C /* CliUser.h */,
+			);
+			path = client;
+			sourceTree = "<group>";
+		};
+		81650D83125158FD003B492C /* Conn */ = {
+			isa = PBXGroup;
+			children = (
+				81650D84125158FD003B492C /* Conn.cpp */,
+				81650D85125158FD003B492C /* Conn.h */,
+				81650D86125158FD003B492C /* EDFConn.cpp */,
+				81650D87125158FD003B492C /* EDFConn.h */,
+			);
+			path = Conn;
+			sourceTree = "<group>";
+		};
+		81650D88125158FD003B492C /* EDF */ = {
+			isa = PBXGroup;
+			children = (
+				81650D89125158FD003B492C /* EDF.cpp */,
+				81650D8A125158FD003B492C /* EDF.h */,
+				81650D8B125158FD003B492C /* EDFElement.cpp */,
+				81650D8C125158FD003B492C /* EDFElement.h */,
+			);
+			path = EDF;
+			sourceTree = "<group>";
+		};
+		81650D8D125158FD003B492C /* qUAck */ = {
+			isa = PBXGroup;
+			children = (
+				81650D8E125158FD003B492C /* build.h */,
+				81650D8F125158FD003B492C /* CmdInput.cpp */,
+				81650D90125158FD003B492C /* CmdInput.h */,
+				81650D91125158FD003B492C /* CmdIO-common.h */,
+				81650D92125158FD003B492C /* CmdIO.cpp */,
+				81650D93125158FD003B492C /* CmdIO.h */,
+				81650D94125158FD003B492C /* CmdMenu.cpp */,
+				81650D95125158FD003B492C /* CmdMenu.h */,
+				81650D96125158FD003B492C /* CmdMenuHelp.h */,
+				81650D97125158FD003B492C /* CmdProcess.cpp */,
+				81650D98125158FD003B492C /* CmdProcess.h */,
+				81650D99125158FD003B492C /* CmdShow.cpp */,
+				81650D9A125158FD003B492C /* CmdShow.h */,
+				81650D9B125158FD003B492C /* CmdTable.cpp */,
+				81650D9C125158FD003B492C /* CmdTable.h */,
+				81650D9D125158FD003B492C /* grynlayer.cpp */,
+				81650D9E125158FD003B492C /* grynlayer.h */,
+				81650D9F125158FD003B492C /* Makefile */,
+				81650DA0125158FD003B492C /* Makefile.in */,
+				81650DA1125158FD003B492C /* Makefile.spell */,
+				81650DA2125158FD003B492C /* MsgCallback.h */,
+				81650DA3125158FD003B492C /* qUAck-common.h */,
+				81650DA6125158FD003B492C /* qUAck-unix.cpp */,
+				81650DA8125158FD003B492C /* qUAck.cpp */,
+				81650DA9125158FD003B492C /* qUAck.h */,
+			);
+			path = qUAck;
+			sourceTree = "<group>";
+		};
+		81650DC412515924003B492C /* Useful */ = {
+			isa = PBXGroup;
+			children = (
+				81650DC512515924003B492C /* LeakTrace.cpp */,
+				81650DC612515924003B492C /* LeakTrace.h */,
+				81650DC712515924003B492C /* StackTrace.cpp */,
+				81650DC812515924003B492C /* StackTrace.h */,
+				81650DC912515924003B492C /* useful.cpp */,
+				81650DCA12515924003B492C /* useful.h */,
+			);
+			name = Useful;
+			path = useful;
+			sourceTree = "<group>";
+		};
+		C6859E8C029090F304C91782 /* Documentation */ = {
+			isa = PBXGroup;
+			children = (
+				C6859E8B029090EE04C91782 /* qUAck.1 */,
+			);
+			name = Documentation;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8DD76F620486A84900D96B5E /* qUAck */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB923108733DC60010E9CD /* Build configuration list for PBXNativeTarget "qUAck" */;
+			buildPhases = (
+				8DD76F640486A84900D96B5E /* Sources */,
+				8DD76F660486A84900D96B5E /* Frameworks */,
+				8DD76F690486A84900D96B5E /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = qUAck;
+			productInstallPath = "$(HOME)/bin";
+			productName = qUAck;
+			productReference = 8DD76F6C0486A84900D96B5E /* qUAck */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "qUAck" */;
+			compatibilityVersion = "Xcode 3.1";
+			hasScannedForEncodings = 1;
+			mainGroup = 08FB7794FE84155DC02AAC07 /* qUAck */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8DD76F620486A84900D96B5E /* qUAck */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8DD76F640486A84900D96B5E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				81650D7B125158D0003B492C /* ua.cpp in Sources */,
+				81650DAB125158FD003B492C /* CliFolder.cpp in Sources */,
+				81650DAC125158FD003B492C /* CliTalk.cpp in Sources */,
+				81650DAD125158FD003B492C /* CliUser.cpp in Sources */,
+				81650DAE125158FD003B492C /* Conn.cpp in Sources */,
+				81650DAF125158FD003B492C /* EDFConn.cpp in Sources */,
+				81650DB0125158FD003B492C /* EDF.cpp in Sources */,
+				81650DB1125158FD003B492C /* EDFElement.cpp in Sources */,
+				81650DB2125158FD003B492C /* CmdInput.cpp in Sources */,
+				81650DB3125158FD003B492C /* CmdIO.cpp in Sources */,
+				81650DB4125158FD003B492C /* CmdMenu.cpp in Sources */,
+				81650DB5125158FD003B492C /* CmdProcess.cpp in Sources */,
+				81650DB6125158FD003B492C /* CmdShow.cpp in Sources */,
+				81650DB7125158FD003B492C /* CmdTable.cpp in Sources */,
+				81650DB8125158FD003B492C /* grynlayer.cpp in Sources */,
+				81650DB9125158FD003B492C /* Makefile in Sources */,
+				81650DBC125158FD003B492C /* qUAck-unix.cpp in Sources */,
+				81650DBE125158FD003B492C /* qUAck.cpp in Sources */,
+				81650DCB12515924003B492C /* LeakTrace.cpp in Sources */,
+				81650DCC12515924003B492C /* StackTrace.cpp in Sources */,
+				81650DCD12515924003B492C /* useful.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB923208733DC60010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = qUAck;
+			};
+			name = Debug;
+		};
+		1DEB923308733DC60010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = qUAck;
+			};
+			name = Release;
+		};
+		1DEB923608733DC60010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LD_GENERATE_MAP_FILE = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = "-DUNIX";
+				OTHER_LDFLAGS = "";
+				PREBINDING = NO;
+				SDKROOT = macosx10.6;
+			};
+			name = Debug;
+		};
+		1DEB923708733DC60010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				PREBINDING = NO;
+				SDKROOT = macosx10.6;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB923108733DC60010E9CD /* Build configuration list for PBXNativeTarget "qUAck" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB923208733DC60010E9CD /* Debug */,
+				1DEB923308733DC60010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "qUAck" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB923608733DC60010E9CD /* Debug */,
+				1DEB923708733DC60010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}
