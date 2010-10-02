@@ -19,6 +19,7 @@
 #include "EDF/EDF.h"
 
 #include "Conn/EDFConn.h"
+#include "grynlayer.h"
 
 #include "CmdInput.h"
 #include "CmdMenu.h"
@@ -49,7 +50,7 @@ extern EDF *m_pChannelList, *m_pUserList;
 extern EDF *m_pServiceList;
 extern EDF *m_pSystemList;
 
-extern EDFConn *m_pClient;
+extern GrynLayer *m_pGrynLayer;
 
 const int BuildNum();
 const char *BuildTime();

@@ -18,7 +18,7 @@
 #include <ctype.h>
 #include <errno.h>
 
-#include "Conn/EDFConn.h"
+#include "../Conn/Conn.h"
 
 #include "CmdIO.h"
 #include "CmdIO-common.h"
@@ -645,39 +645,3 @@ bool CmdLogClose()
    return true;
 }
 
-void CmdEDFPrint(const char *szTitle, EDF *pEDF, int iOptions)
-{
-   bytes *pWrite = NULL;
-
-	if(iOptions == -1)
-	{
-		iOptions = EDFElement::EL_ROOT | EDFElement::EL_CURR;
-	}
-
-   if(szTitle != NULL)
-   {
-      CmdWrite(szTitle);
-      CmdWrite(":\n");
-   }
-
-   pWrite = pEDF->Write(iOptions | EDFElement::PR_SPACE);
-   CmdWrite(pWrite);//, CMD_OUT_RAW);
-   CmdWrite("\n");
-   delete pWrite;
-}
-
-void CmdEDFPrint(const char *szTitle, EDF *pEDF, bool bRoot, bool bCurr)
-{
-   int iOptions = 0;
-
-   if(bRoot == true)
-   {
-      iOptions += EDFElement::EL_ROOT;
-   }
-   if(bCurr == true)
-   {
-      iOptions += EDFElement::EL_CURR;
-   }
-
-   CmdEDFPrint(szTitle, pEDF, iOptions);
-}

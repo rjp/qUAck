@@ -61,7 +61,8 @@
 #include <time.h>
 #endif
 
-#include "Conn/EDFConn.h"
+#include "Conn/Conn.h"
+#include "EDF/EDF.h"
 
 #include "CmdIO.h"
 #include "CmdIO-common.h"
@@ -198,13 +199,6 @@ void CmdStartup(int iSignal)
 
    debug(DEBUGLEVEL_INFO, "CmdStartup entry\n");
 
-   /* if(iSignal == SIGWINCH)
-   {
-      endwin();
-
-      (*m_pSIGWINCH)(SIGWINCH);
-   } */
-
    if(iSignal != SIGWINCH)
    {
       debug(DEBUGLEVEL_INFO, "CmdStartup init\n");
@@ -212,7 +206,6 @@ void CmdStartup(int iSignal)
    }
    else
    {
-   /*   (*m_pSIGWINCH)(SIGWINCH); */
       debug(DEBUGLEVEL_INFO, "CmdStartup SIGWINCH\n");
       resize_curses();
    }
@@ -893,112 +886,13 @@ QUACK_UTMPTYPE *utmpscan(int iSession)
 
    endutent();
 #endif
+#endif
 
    debug(DEBUGLEVEL_INFO, "utmpscan exit %p\n", pEntry);
    return pEntry;
 }
 
-bool ProxyHostEntry(EDF *pEDF, struct QUACK_UTMPTYPE *pEntry)
-{
-   char *szAddress = NULL;
 
-   if(pEntry != NULL)
-   {
-      if(strlen(pEntry->ut_host) > 0)
-      {
-#ifndef CYGWIN
-#ifdef __APPLE__
-         szAddress = NULL; // SGD - FIXMED UTMP ASSUPUTIONS
-#else
-         szAddress = Conn::AddressToString(ntohl(pEntry->ut_addr_v6[0]));
-#endif
-#else
-         szAddress = Conn::AddressToString(ntohl(pEntry->ut_addr));
-#endif
-         debug(DEBUGLEVEL_DEBUG, "ProxyHostEntry parent connected from '%s' / '%s'\n", pEntry->ut_host, szAddress);
-
-         if(strcmp(pEntry->ut_host, szAddress) != 0)
-         {
-            pEDF->AddChild("hostname", pEntry->ut_host);
-            if(ProtocolVersion("2.5") >= 0)
-            {
-               pEDF->AddChild("address", szAddress);
-            }
-         }
-         else if(ProtocolVersion("2.5") < 0)
-         {
-            pEDF->AddChild("hostname", szAddress);
-         }
-
-         delete[] szAddress;
-      }
-      else
-      {
-         debug(DEBUGLEVEL_DEBUG, "ProxyHostEntry parent connected locally\n");
-
-         return false;
-      }
-   }
-
-   return true;
-}
-
-#endif
-
-bool ProxyHost(EDF *pEDF)
-{
-   debug(DEBUGLEVEL_INFO, "ProxyHost entry\n");
-
-#ifndef FreeBSD
-   int iPID = 0, iPPID = 0, iSession = 0, iPrevSession = 0;
-   struct QUACK_UTMPTYPE *pEntry = NULL;
-
-   // printf("tty %s\n", ttyname(0));
-
-   // szHost[0] = '\0';
-   // if(utmpscan(-1, szHost) == false)
-   pEntry = utmpscan(-1);
-   if(pEntry == NULL)
-   {
-      // Couldn't find this process
-
-      debug(DEBUGLEVEL_ERR, "ProxyHost exit false, utmpscan failed\n");
-      return false;
-   }
-
-   debug(DEBUGLEVEL_INFO, "ProxyHost host '%s'\n", pEntry->ut_host);
-   if(strchr(pEntry->ut_host, ':') != NULL)
-   {
-      debug(DEBUGLEVEL_INFO, "ProxyHost parent check\n");
-
-      iPID = getppid();
-      while(iPID != 0 && procstat(iPID, &iPPID, &iSession) == true)
-      {
-         debug(DEBUGLEVEL_INFO, "ProxyHost %d (parent %d, session %d)\n", iPID, iPPID, iSession);
-         if(iPrevSession == iSession)
-         {
-            // szHost[0] = '\0';
-            pEntry = utmpscan(iSession);
-            ProxyHostEntry(pEDF, pEntry);
-
-            iPID = 0;
-         }
-         else
-         {
-            iPrevSession = iSession;
-            iPID = iPPID;
-         }
-      }
-   }
-   else
-   {
-      ProxyHostEntry(pEDF, pEntry);
-   }
-#endif
-
-   debug(DEBUGLEVEL_INFO, "ProxyHost exit true\n");
-   return true;
-}
 
 void CmdRun(const char *szProgram, bool bWait, const char *szArgs)
 {
