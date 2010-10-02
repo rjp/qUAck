@@ -1,5 +1,4 @@
-<<<<<<< HEAD
 *.o
-=======
->>>>>>> 835ce8007e85a346ac32d116b5281874f977c6d4
 config.log
+config.h
+config.status
