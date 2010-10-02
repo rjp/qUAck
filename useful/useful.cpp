@@ -27,7 +27,7 @@
 #endif
 #endif
 
-#include "useful/useful.h"
+#include "useful.h"
 
 char *m_szDebugFile = NULL;
 FILE *g_fDebug = NULL;

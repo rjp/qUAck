@@ -16,9 +16,9 @@
 #ifndef _QUACK_H_
 #define _QUACK_H_
 
-#include "EDF/EDF.h"
+#include "../EDF/EDF.h"
 
-#include "Conn/EDFConn.h"
+#include "../Conn/EDFConn.h"
 #include "grynlayer.h"
 
 #include "CmdInput.h"

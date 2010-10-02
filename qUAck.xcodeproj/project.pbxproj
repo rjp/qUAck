@@ -22,7 +22,6 @@
 		81650DB6125158FD003B492C /* CmdShow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650D99125158FD003B492C /* CmdShow.cpp */; };
 		81650DB7125158FD003B492C /* CmdTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650D9B125158FD003B492C /* CmdTable.cpp */; };
 		81650DB8125158FD003B492C /* grynlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650D9D125158FD003B492C /* grynlayer.cpp */; };
-		81650DB9125158FD003B492C /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = 81650D9F125158FD003B492C /* Makefile */; };
 		81650DBC125158FD003B492C /* qUAck-unix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650DA6125158FD003B492C /* qUAck-unix.cpp */; };
 		81650DBE125158FD003B492C /* qUAck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650DA8125158FD003B492C /* qUAck.cpp */; };
 		81650DCB12515924003B492C /* LeakTrace.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81650DC512515924003B492C /* LeakTrace.cpp */; };
@@ -97,11 +96,20 @@
 		81650DCA12515924003B492C /* useful.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = useful.h; sourceTree = "<group>"; };
 		81650DE812515E66003B492C /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
 		81650F111256A099003B492C /* libncurses.5.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libncurses.5.4.dylib; path = usr/lib/libncurses.5.4.dylib; sourceTree = SDKROOT; };
+		81650F4212572A96003B492C /* qUAck-daemon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "qUAck-daemon.cpp"; path = "qUAck/qUAck-daemon.cpp"; sourceTree = "<group>"; };
+		81650F4612572AC1003B492C /* qUAckd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qUAckd; sourceTree = BUILT_PRODUCTS_DIR; };
 		8DD76F6C0486A84900D96B5E /* qUAck */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qUAck; sourceTree = BUILT_PRODUCTS_DIR; };
 		C6859E8B029090EE04C91782 /* qUAck.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = qUAck.1; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		81650F4412572AC1003B492C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8DD76F660486A84900D96B5E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -116,6 +124,7 @@
 		08FB7794FE84155DC02AAC07 /* qUAck */ = {
 			isa = PBXGroup;
 			children = (
+				81650F4212572A96003B492C /* qUAck-daemon.cpp */,
 				81650DE812515E66003B492C /* stdafx.h */,
 				81650DC412515924003B492C /* Useful */,
 				81650D7C125158FD003B492C /* client */,
@@ -145,6 +154,7 @@
 			isa = PBXGroup;
 			children = (
 				8DD76F6C0486A84900D96B5E /* qUAck */,
+				81650F4612572AC1003B492C /* qUAckd */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -241,6 +251,22 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		81650F4512572AC1003B492C /* qUAckd */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 81650F4A12572ADF003B492C /* Build configuration list for PBXNativeTarget "qUAckd" */;
+			buildPhases = (
+				81650F4312572AC1003B492C /* Sources */,
+				81650F4412572AC1003B492C /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = qUAckd;
+			productName = qUAckd;
+			productReference = 81650F4612572AC1003B492C /* qUAckd */;
+			productType = "com.apple.product-type.tool";
+		};
 		8DD76F620486A84900D96B5E /* qUAck */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1DEB923108733DC60010E9CD /* Build configuration list for PBXNativeTarget "qUAck" */;
@@ -272,11 +298,19 @@
 			projectRoot = "";
 			targets = (
 				8DD76F620486A84900D96B5E /* qUAck */,
+				81650F4512572AC1003B492C /* qUAckd */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
+		81650F4312572AC1003B492C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8DD76F640486A84900D96B5E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -296,7 +330,6 @@
 				81650DB6125158FD003B492C /* CmdShow.cpp in Sources */,
 				81650DB7125158FD003B492C /* CmdTable.cpp in Sources */,
 				81650DB8125158FD003B492C /* grynlayer.cpp in Sources */,
-				81650DB9125158FD003B492C /* Makefile in Sources */,
 				81650DBC125158FD003B492C /* qUAck-unix.cpp in Sources */,
 				81650DBE125158FD003B492C /* qUAck.cpp in Sources */,
 				81650DCB12515924003B492C /* LeakTrace.cpp in Sources */,
@@ -362,6 +395,36 @@
 			};
 			name = Release;
 		};
+		81650F4812572AC1003B492C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = /usr/local/bin;
+				PREBINDING = NO;
+				PRODUCT_NAME = qUAckd;
+			};
+			name = Debug;
+		};
+		81650F4912572AC1003B492C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PREBINDING = NO;
+				PRODUCT_NAME = qUAckd;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -379,6 +442,15 @@
 			buildConfigurations = (
 				1DEB923608733DC60010E9CD /* Debug */,
 				1DEB923708733DC60010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		81650F4A12572ADF003B492C /* Build configuration list for PBXNativeTarget "qUAckd" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				81650F4812572AC1003B492C /* Debug */,
+				81650F4912572AC1003B492C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

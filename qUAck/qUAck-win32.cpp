@@ -20,9 +20,9 @@
 #include <errno.h>
 #include <process.h>
 
-#include "EDF/EDF.h"
+#include "../EDF/EDF.h"
 
-#include "Conn/Conn.h"
+#include "../Conn/Conn.h"
 
 #include "CmdIO.h"
 #include "CmdIO-common.h"

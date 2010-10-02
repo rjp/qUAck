@@ -31,9 +31,9 @@
 #include "CmdProcess.h"
 #include "CmdShow.h"
 
-#include "client/CliFolder.h"
-#include "client/CliTalk.h"
-#include "client/CliUser.h"
+#include "../client/CliFolder.h"
+#include "../client/CliTalk.h"
+#include "../client/CliUser.h"
 
 #include "qUAck.h"
 

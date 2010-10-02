@@ -18,7 +18,7 @@
 #include <ctype.h>
 #include <time.h>
 
-#include "EDF/EDF.h"
+#include "../EDF/EDF.h"
 
 #include "ua.h"
 #include "CliUser.h"

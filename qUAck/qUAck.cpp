@@ -28,9 +28,9 @@
 
 #include "ua.h"
 
-#include "client/CliFolder.h"
-#include "client/CliTalk.h"
-#include "client/CliUser.h"
+#include "../client/CliFolder.h"
+#include "../client/CliTalk.h"
+#include "../client/CliUser.h"
 
 #include "CmdIO.h"
 #include "CmdInput.h"
@@ -983,9 +983,7 @@ CmdInput *CmdInputLoop(int iMenuStatus, CmdInput *pInput, byte *pcInput, byte **
                if(iMenuStatus != -1)
                {
                   delete pRead;
-                  // pRead = NULL;
                }
-               // pRead = new EDF();
                if(iMenuStatus != -1)
                {
                   if(mask(iAnnounce, CMD_RESET) == true)
@@ -1627,6 +1625,8 @@ int main(int argc, char **argv)
 #ifdef LEAKTRACEON
    leakSetStack1();
 #endif
+	
+	setenv("TERM", "vt100", 1);
 
 #ifdef UNIX
 #ifndef BUILDDAEMON
@@ -1961,6 +1961,17 @@ int main(int argc, char **argv)
          szPassword = (char*) CmdLineStr("Enter your password", UA_NAME_LEN, CMD_LINE_SILENT | CMD_LINE_NOESCAPE);
       }
 
+      if (iUserType==USERTYPE_TEMP)
+      {
+         GrynLayer::UserState state = GrynLayer::USER_UNSETSTATE;
+         // FIXME
+         m_pGrynLayer->Login(szUsername, szPassword, state);
+      }
+      else
+      {
+         m_pGrynLayer->GuestLogin();
+      }
+
       pRequest = new EDF();
       if(szUsername != NULL)
       {
@@ -2048,10 +2059,6 @@ int main(int argc, char **argv)
                }
             }
          }
-         /* else
-         {
-         CmdShutdown("Login failed");
-         } */
 
          debug(DEBUGLEVEL_DEBUG, "login delete reply string\n");
 

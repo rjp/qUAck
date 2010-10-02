@@ -28,7 +28,7 @@
 #include "CmdInput.h"
 #include "CmdMenu.h"
 
-#include "client/CliUser.h"
+#include "../client/CliUser.h"
 
 #include "CmdShow.h"
 #include "CmdTable.h"

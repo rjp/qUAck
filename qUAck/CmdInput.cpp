@@ -25,7 +25,7 @@
 #include <aspell.h>
 #endif
 
-#include "EDF/EDF.h"
+#include "../EDF/EDF.h"
 
 #include "CmdIO.h"
 #include "CmdIO-common.h"

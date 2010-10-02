@@ -11,8 +11,8 @@
 #define bool int
 #endif
 
-#include "useful/StackTrace.h"
-#include "useful/LeakTrace.h"
+#include "StackTrace.h"
+#include "LeakTrace.h"
 
 #ifdef UNIX
 #include <strings.h>

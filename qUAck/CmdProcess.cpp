@@ -23,9 +23,9 @@
 #include "../EDF/EDF.h"
 #include "ua.h"
 
-#include "client/CliFolder.h"
-#include "client/CliTalk.h"
-#include "client/CliUser.h"
+#include "../client/CliFolder.h"
+#include "../client/CliTalk.h"
+#include "../client/CliUser.h"
 
 #include "CmdIO.h"
 #include "CmdMenu.h"
@@ -177,10 +177,6 @@ bool CmdAnnounceProcess(EDF *pAnnounce)
                         m_pMessageList->DeleteChild("read");
                      }
                   }
-                  /* else
-                  {
-                     debug("CmdAnnounceProcess cannot find message %d / %d for announce %s\n", iMessageID, iReplyID, szAnnounce);
-                  } */
                }
                else
                {

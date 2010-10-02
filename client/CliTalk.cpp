@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "EDF/EDF.h"
+#include "../EDF/EDF.h"
 
 #include "ua.h"
 #include "CliTalk.h"
