@@ -26,6 +26,9 @@
 #include <math.h>
 #endif
 
+#include <curses.h>
+#include <ncurses.h>
+
 #if 0
 #include <ncursesw/ncurses.h>
 #include <ncursesw/term.h>
@@ -34,8 +37,6 @@
 #endif
 
 #ifdef __APPLE__
-#include <curses.h>
-#include <ncurses.h>
 #include <utmpx.h>
 #define QUACK_UTMPTYPE utmpx
 #else
