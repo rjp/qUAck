@@ -62,8 +62,8 @@
 #include <time.h>
 #endif
 
-#include "Conn/Conn.h"
-#include "EDF/EDF.h"
+#include "../Conn/Conn.h"
+#include "../EDF/EDF.h"
 
 #include "CmdIO.h"
 #include "CmdIO-common.h"
