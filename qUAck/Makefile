@@ -16,8 +16,10 @@ OBJS2=$(OBJS) qUAck-unix.o qUAck-leak.o ../useful/LeakTrace.o
 OBJS3=$(OBJS) qUAck-daemon.o qUAckd.o
 OBJS4=$(OBJS) qUAck-unixw.o qUAck.o
 
-all:	$(BINARY)
+all:	binfolder $(BINARY)
 
+binfolder:
+	@\mkdir -p ../bin
 clean:
 	@\rm -f $(BINARY) $(OBJS1) $(OBJS2)
 

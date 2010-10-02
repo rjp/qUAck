@@ -2,3 +2,8 @@
 config.log
 config.h
 config.status
+.DS_Store
+*.mode1v3
+*.pbxuser
+*.perspectivev3
+*.tm_build_errors
