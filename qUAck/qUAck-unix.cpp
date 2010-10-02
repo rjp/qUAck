@@ -26,8 +26,10 @@
 #include <math.h>
 #endif
 
+#ifdef HAVE_CURSES_H
 #include <curses.h>
 #include <ncurses.h>
+#endif
 
 #if 0
 #include <ncursesw/ncurses.h>
