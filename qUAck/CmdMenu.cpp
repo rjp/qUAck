@@ -7007,54 +7007,6 @@ void ConnectionMenu()
    }
 }
 
-/* SGD - Removed non future proof menu
-
-EDF *DirectRequestMenu(char **szRequest)
-{
-   STACKTRACE
-   int iParse = 0;
-   char *szText = NULL, *szParse = NULL;
-   EDF *pReturn = NULL;
-
-   CmdWrite("EDF Direct Request: Create a request for 'request name'\nAdditional fields should be entered in EDF format:\n\n<userid=1/>\n<accesslevel=1/>\n\nfor example\n\n*** PLEASE do not use unless you know EXACTLY what you are doing ***\n");
-   (*szRequest) = CmdLineStr("Name of request", "RETURN to abort", LINE_LEN);
-   if((*szRequest) != NULL && stricmp((*szRequest), "") != 0)
-   {
-      szText = CmdText(CMD_LINE_EDITOR);
-      if(szText != NULL)
-      {
-         pReturn = new EDF();
-         if(strlen(szText) > 5)
-         {
-            debug(DEBUGLEVEL_DEBUG, "DirectRequestMenu close tag check %s\n", (char *)(szText + strlen(szText) - 3));
-            if(strncmp(szText, "<>", 2) != 0) // && strncmp(szText + strlen(szText) - 3, "</>", 3) != 0)
-            {
-               szParse = new char[strlen(szText) + 10];
-               strcpy(szParse, "<>");
-               strcpy(szParse + 2, szText);
-               strcpy(szParse + 2 + strlen(szText), "</>");
-               debug(DEBUGLEVEL_DEBUG, "DirectRequestMenu parsing with additions:\n%s\n", szParse);
-               iParse = pReturn->Read(szParse);
-               delete[] szParse;
-            }
-            else
-            {
-               iParse = pReturn->Read(szText);
-            }
-            if(iParse <= 0)
-            {
-               CmdWrite("Unable to parse additional fields\n");
-               delete pReturn;
-               pReturn = NULL;
-            }
-         }
-         delete[] szText;
-      }
-   }
-
-   return pReturn;
-}
-*/
 
 int TaskDayMenu()
 {

@@ -22,9 +22,12 @@ class GrynLayer
         typedef enum UserState
         {
 		   USER_UNSETSTATE = 0,
-           USER_BUSY   = 1,
-           USER_SILENT = 2,
-           USER_SHADOW = 4
+           USER_BUSY       = 1,
+           USER_SILENT     = 2,
+           USER_SHADOW     = 4,
+		   USER_ISAGENT    = 8,
+		   USER_ISGUEST    = 16,
+		   USER_FORCELOGIN = 32
         };
 
     public:
@@ -37,11 +40,12 @@ class GrynLayer
         bool IsConnected();
 
         void setBusyStatus(bool busy, const std::string &message="");
-	
+	void FolderSubscribe(int folderId);
 	
 	void GuestLogin();
 	void Login(const std::string &username, const std::string &password, UserState status);
 	
+	void MessageProcessing();
 
 
 	void setBanner(const std::string &newBanner);

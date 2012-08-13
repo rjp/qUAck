@@ -883,16 +883,16 @@ int CmdAnnounce(EDF *pAnnounce, bool bAddToBuffer, bool bReturn)
    EDF **pAnnounces = NULL;
 
    CmdAnnounceProcess(pAnnounce);
-   if(bAddToBuffer == true)
-   {
+   //SGD Always put it in buffer for now if(bAddToBuffer == true)
+   //SGD{
       iTemp = m_iNumAnnounces;
       // printf("CmdAnnounce buffer %p\n", pAnnounce);
       ARRAY_INSERT(EDF *, m_pAnnounces, m_iNumAnnounces, pAnnounce, iTemp, pAnnounces)
-   }
+   /*SGD}
    else
    {
       iReturn = CmdAnnounceShow(pAnnounce, bReturn == true ? "\n" : "");
-   }
+   }*/
 
    return iReturn;
 }
@@ -971,6 +971,7 @@ CmdInput *CmdInputLoop(int iMenuStatus, CmdInput *pInput, byte *pcInput, byte **
 
       if(m_pGrynLayer != NULL)
       {
+		m_pGrynLayer->MessageProcessing();
          pRead = m_pGrynLayer->getEDF()->Read();
          if(pRead != NULL)
          {
@@ -1961,7 +1962,7 @@ int main(int argc, char **argv)
          szPassword = (char*) CmdLineStr("Enter your password", UA_NAME_LEN, CMD_LINE_SILENT | CMD_LINE_NOESCAPE);
       }
 
-      if (iUserType==USERTYPE_TEMP)
+      if (iUserType!=USERTYPE_TEMP)
       {
          GrynLayer::UserState state = GrynLayer::USER_UNSETSTATE;
          // FIXME
@@ -1989,19 +1990,19 @@ int main(int argc, char **argv)
       pRequest->AddChild("client", CLIENT_NAME());
       pRequest->AddChild("clientbase", CLIENT_BASE);
       pRequest->AddChild("protocol", PROTOCOL);
-      iStatus = 0;
-      if(bBusy == true)
-      {
-         iStatus += LOGIN_BUSY;
-      }
-      if(bSilent == true)
-      {
-         iStatus += LOGIN_SILENT;
-      }
-      if(bShadow == true)
-      {
-         iStatus += LOGIN_SHADOW;
-      }
+	  iStatus = 0;
+	  if(bBusy == true)
+	  {
+		 iStatus += LOGIN_BUSY;
+	  }
+	  if(bSilent == true)
+	  {
+		 iStatus += LOGIN_SILENT;
+	  }
+	  if(bShadow == true)
+	  {
+		 iStatus += LOGIN_SHADOW;
+	  }
       if(iStatus > 0)
       {
          pRequest->AddChild("status", iStatus);
@@ -2195,8 +2196,6 @@ int main(int argc, char **argv)
    {
       if(CmdYesNo("Subscribe to all folders (recommended)", true) == true)
       {
-         pRequest = new EDF();
-
          m_pFolderList->Root();
          bLoop = m_pFolderList->Child("folder");
          while(bLoop == true)
@@ -2207,16 +2206,14 @@ int main(int argc, char **argv)
             m_pFolderList->GetChild("subtype", &iSubType);
             if(iSubType == 0)
             {
-               m_pFolderList->Get(NULL, &iFolderID);
+                m_pFolderList->Get(NULL, &iFolderID);
 
-               pRequest->SetChild("folderid", iFolderID);
-               CmdRequest(MSG_FOLDER_SUBSCRIBE, pRequest, false);
+				m_pGrynLayer->FolderSubscribe(iFolderID);
             }
 
             bLoop = m_pFolderList->Iterate("folder");
          }
 
-         delete pRequest;
       }
    }
 

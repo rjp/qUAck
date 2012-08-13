@@ -219,10 +219,105 @@ void GrynLayer::setBusyStatus(bool busy, const std::string &message)
 }
 
 
+void GrynLayer::FolderSubscribe(int folderId)
+{
+	EDF* pRequest = new EDF();
+	pRequest->SetChild("folderid", folderId);
+	CmdRequest(MSG_FOLDER_SUBSCRIBE, pRequest, false);
+	
+	delete pRequest;
+}
+
+
 void GrynLayer::GuestLogin()
 {
+	
+	Login("", "", USER_ISGUEST);
 }
 
 void GrynLayer::Login(const std::string &username, const std::string &password, UserState status)
 {
+	EDF* pRequest = new EDF();
+	if(username.length()>0)
+	{
+		pRequest->AddChild("name", username.c_str());
+	}
+	if(password.length()>0)
+	{
+		pRequest->AddChild("password", password.c_str());
+	}
+	pRequest->AddChild("client", CLIENT_NAME());
+	pRequest->AddChild("clientbase", CLIENT_BASE);
+	pRequest->AddChild("protocol", PROTOCOL);
+	
+	if (status & USER_ISAGENT)
+	{
+		pRequest->AddChild("usertype", USERTYPE_AGENT);
+	} else if (status & USER_ISGUEST)
+	{
+		pRequest->AddChild("usertype", USERTYPE_TEMP);
+	}
+	
+	if (status & USER_FORCELOGIN)
+	{
+		pRequest->AddChild("force", true);
+	}
+	
+	int iStatus = 0;
+	
+	if(status & USER_BUSY)
+	{
+		iStatus += LOGIN_BUSY;
+	}
+	if(status & USER_SILENT)
+	{
+		iStatus += LOGIN_SILENT;
+	}
+	if(status & USER_SHADOW)
+	{
+		iStatus += LOGIN_SHADOW;
+	}
+}
+
+
+
+
+void GrynLayer::MessageProcessing()
+{
+	/*EDF *pRead = m_conn->Read();
+	
+	if (pRead!=NULL)
+	{
+		char *szType = NULL;
+		pRead->Get(&szType);
+		if(stricmp(szType, "announce") == 0)
+		{
+			iMenuStatus = -1;
+			int iAnnounce = CmdAnnounce(pRead, iMenuStatus == -1, !mask(pInput->Type(), CMD_MENU_SILENT));
+			if(iMenuStatus != -1)
+			{
+				delete pRead;
+			}
+			if(iMenuStatus != -1)
+			{
+				if(mask(iAnnounce, CMD_RESET) == true)
+				{
+					pInput = CmdInputSetup(iMenuStatus);
+					bShow = true;
+				}
+				else if(mask(iAnnounce, CMD_REDRAW) == true)
+				{
+					// pInput->Show();
+					bShow = true;
+				}
+			}
+		}
+		
+	}
+	else if(!m_pGrynLayer->IsConnected())
+	{
+		CmdShutdown("Connection to host lost");
+	}
+	*/
+
 }
