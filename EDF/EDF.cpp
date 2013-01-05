@@ -142,7 +142,10 @@ bool EDF::Get(char **szName, bytes **pValue)
 
 bool EDF::Get(char **szName, int *iValue)
 {
-   return Get(szName, (long *)iValue);
+   long l = *iValue;
+   bool ok = Get(szName, &l);
+   *iValue = (int) l;
+   return ok;
 }
 
 bool EDF::Get(char **szName, long *lValue)
@@ -438,7 +441,10 @@ bool EDF::GetChild(const char *szName, bytes **pValue, int iPosition)
 bool EDF::GetChild(const char *szName, int *iValue, int iPosition)
 {
 	STACKTRACE
-   return GetChild(szName, (long *)iValue, iPosition);
+   long l = *iValue;
+   bool ok = GetChild(szName, (long *)&l, iPosition);
+   *iValue = (int) l;
+   return ok;
 }
 
 bool EDF::GetChild(const char *szName, long *lValue, int iPosition)

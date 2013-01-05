@@ -25,7 +25,7 @@
 #include <aspell.h>
 #endif
 
-#include "EDF/EDF.h"
+#include "../EDF/EDF.h"
 
 #include "CmdIO.h"
 #include "CmdIO-common.h"
@@ -111,9 +111,11 @@ CmdInput::CmdInput(CMDFIELDSFUNC pFieldsFunc, EDF *pData)
    LineSetup(NULL, NULL, -1, CMD_LINE_MULTI, NULL, (void *)pFieldsFunc, pData);
 }
 
-CmdInput::CmdInput(const char *szTitle, int iMax, int iOptions, const char *szInit, CMDTABFUNC pTabFunc, EDF *pData)
+
+// SGD
+CmdInput::CmdInput(const char *szTitle, int iMax, int iOptions, const char *szInit)
 {
-   LineSetup(szTitle, NULL, iMax, iOptions, szInit, (void *)pTabFunc, pData);
+   LineSetup(szTitle, NULL, iMax, iOptions, szInit, (void *)NULL, NULL);
 }
 
 CmdInput::CmdInput(const char *szTitle, const char *szExtra, int iMax, int iOptions, const char *szInit, CMDTABFUNC pTabFunc, EDF *pData)

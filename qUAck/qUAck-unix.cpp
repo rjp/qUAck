@@ -26,11 +26,23 @@
 #include <math.h>
 #endif
 
-#if 1
+#ifdef HAVE_CURSES_H
+#include <curses.h>
+#include <ncurses.h>
+#endif
+
+#if 0
 #include <ncursesw/ncurses.h>
 #include <ncursesw/term.h>
 #include <locale.h>
 #include <math.h>
+#endif
+
+#ifdef __APPLE__
+#include <utmpx.h>
+#define QUACK_UTMPTYPE utmpx
+#else
+#define QUACK_UTMPTYPE utmp
 #endif
 
 #include <stdio.h>
@@ -52,7 +64,8 @@
 #include <time.h>
 #endif
 
-#include "Conn/EDFConn.h"
+#include "../Conn/Conn.h"
+#include "../EDF/EDF.h"
 
 #include "CmdIO.h"
 #include "CmdIO-common.h"
@@ -91,12 +104,12 @@ CmdInput *CmdInputLoop(int iMenuStatus, CmdInput *pInput, byte *pcInput, byte **
    return m_szClientName;
 } */
 
-char *CLIENT_SUFFIX()
+const char *CLIENT_SUFFIX()
 {
    return "";
 }
 
-char *CLIENT_PLATFORM()
+const char *CLIENT_PLATFORM()
 {
    return " (Unix)";
 }
@@ -189,13 +202,6 @@ void CmdStartup(int iSignal)
 
    debug(DEBUGLEVEL_INFO, "CmdStartup entry\n");
 
-   /* if(iSignal == SIGWINCH)
-   {
-      endwin();
-
-      (*m_pSIGWINCH)(SIGWINCH);
-   } */
-
    if(iSignal != SIGWINCH)
    {
       debug(DEBUGLEVEL_INFO, "CmdStartup init\n");
@@ -203,7 +209,6 @@ void CmdStartup(int iSignal)
    }
    else
    {
-   /*   (*m_pSIGWINCH)(SIGWINCH); */
       debug(DEBUGLEVEL_INFO, "CmdStartup SIGWINCH\n");
       resize_curses();
    }
@@ -238,7 +243,7 @@ bool CmdLocal()
    return true;
 }
 
-char *CmdUsername()
+const char *CmdUsername()
 {
    return NULL;
 }
@@ -618,23 +623,23 @@ void CmdRedraw(bool bFull)
 
 void CmdBack(int iNumChars)
 {
-   while(iNumChars > 0 && stdscr->_curx > 0)
+   while(iNumChars > 0 && getcurx(stdscr) > 0)
    {
-      move(stdscr->_cury, stdscr->_curx - 1);
+      move(getcury(stdscr), getcurx(stdscr) - 1);
       iNumChars--;
    }
 }
 
 void CmdReturn()
 {
-   if(stdscr->_cury == LINES - 1)
+   if(getcury(stdscr) == LINES - 1)
    {
       scroll(stdscr);
-      move(stdscr->_cury, 0);
+      move(getcury(stdscr), 0);
    }
    else
    {
-      move(stdscr->_cury + 1, 0);
+      move(getcury(stdscr) + 1, 0);
    }
 }
 
@@ -826,13 +831,13 @@ bool procstat(int iPID, int *iPPID, int *iSession)
 
    return true;
 }
+#endif
 
-utmp *utmpscan(int iSession)
+QUACK_UTMPTYPE *utmpscan(int iSession)
 {
    int iTTYPos = 0;
    bool bFound = false;
    char *szTTY = NULL;
-   struct utmp *pEntry = NULL;
 
    debug(DEBUGLEVEL_INFO, "utmpscan entry %d\n", iSession);
 
@@ -855,6 +860,23 @@ utmp *utmpscan(int iSession)
    }
 
 #ifndef CYGWIN
+#ifdef __APPLE__
+   return NULL; // SGD - FIXME, lots of assumptions made about UTMP in qUAck
+   struct utmpx *pEntry = NULL;
+   while(bFound == false && (pEntry = getutxent()) != NULL)
+   {
+      if((iSession != -1 && pEntry->ut_pid == iSession) || (iSession == -1 && stricmp(szTTY, pEntry->ut_id) == 0))
+      {
+         debug(DEBUGLEVEL_INFO, "utmpscan %d, '%s'\n", iSession, pEntry->ut_host);
+
+         bFound = true;
+      }
+   }
+
+   endutxent();
+
+#else
+   struct utmp *pEntry = NULL;
    while(bFound == false && (pEntry = getutent()) != NULL)
    {
       if((iSession != -1 && pEntry->ut_pid == iSession) || (iSession == -1 && stricmp(szTTY, pEntry->ut_id) == 0))
@@ -867,108 +889,13 @@ utmp *utmpscan(int iSession)
 
    endutent();
 #endif
+#endif
 
    debug(DEBUGLEVEL_INFO, "utmpscan exit %p\n", pEntry);
    return pEntry;
 }
 
-bool ProxyHostEntry(EDF *pEDF, struct utmp *pEntry)
-{
-   char *szAddress = NULL;
 
-   if(pEntry != NULL)
-   {
-      if(strlen(pEntry->ut_host) > 0)
-      {
-#ifndef CYGWIN
-         szAddress = Conn::AddressToString(ntohl(pEntry->ut_addr_v6[0]));
-#else
-         szAddress = Conn::AddressToString(ntohl(pEntry->ut_addr));
-#endif
-         debug(DEBUGLEVEL_DEBUG, "ProxyHostEntry parent connected from '%s' / '%s'\n", pEntry->ut_host, szAddress);
-
-         if(strcmp(pEntry->ut_host, szAddress) != 0)
-         {
-            pEDF->AddChild("hostname", pEntry->ut_host);
-            if(ProtocolVersion("2.5") >= 0)
-            {
-               pEDF->AddChild("address", szAddress);
-            }
-         }
-         else if(ProtocolVersion("2.5") < 0)
-         {
-            pEDF->AddChild("hostname", szAddress);
-         }
-
-         delete[] szAddress;
-      }
-      else
-      {
-         debug(DEBUGLEVEL_DEBUG, "ProxyHostEntry parent connected locally\n");
-
-         return false;
-      }
-   }
-
-   return true;
-}
-
-#endif
-
-bool ProxyHost(EDF *pEDF)
-{
-   debug(DEBUGLEVEL_INFO, "ProxyHost entry\n");
-
-#ifndef FreeBSD
-   int iPID = 0, iPPID = 0, iSession = 0, iPrevSession = 0;
-   struct utmp *pEntry = NULL;
-
-   // printf("tty %s\n", ttyname(0));
-
-   // szHost[0] = '\0';
-   // if(utmpscan(-1, szHost) == false)
-   pEntry = utmpscan(-1);
-   if(pEntry == NULL)
-   {
-      // Couldn't find this process
-
-      debug(DEBUGLEVEL_ERR, "ProxyHost exit false, utmpscan failed\n");
-      return false;
-   }
-
-   debug(DEBUGLEVEL_INFO, "ProxyHost host '%s'\n", pEntry->ut_host);
-   if(strchr(pEntry->ut_host, ':') != NULL)
-   {
-      debug(DEBUGLEVEL_INFO, "ProxyHost parent check\n");
-
-      iPID = getppid();
-      while(iPID != 0 && procstat(iPID, &iPPID, &iSession) == true)
-      {
-         debug(DEBUGLEVEL_INFO, "ProxyHost %d (parent %d, session %d)\n", iPID, iPPID, iSession);
-         if(iPrevSession == iSession)
-         {
-            // szHost[0] = '\0';
-            pEntry = utmpscan(iSession);
-            ProxyHostEntry(pEDF, pEntry);
-
-            iPID = 0;
-         }
-         else
-         {
-            iPrevSession = iSession;
-            iPID = iPPID;
-         }
-      }
-   }
-   else
-   {
-      ProxyHostEntry(pEDF, pEntry);
-   }
-#endif
-
-   debug(DEBUGLEVEL_INFO, "ProxyHost exit true\n");
-   return true;
-}
 
 void CmdRun(const char *szProgram, bool bWait, const char *szArgs)
 {
@@ -1024,7 +951,7 @@ bool CmdBrowse(const char *szURI)
    return true;
 }
 
-char CmdDirSep()
+const char CmdDirSep()
 {
    return '/';
 }

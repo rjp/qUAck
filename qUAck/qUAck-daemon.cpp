@@ -25,7 +25,7 @@
 #include <unistd.h>
 #include <netdb.h>
 
-#include "Conn/EDFConn.h"
+#include "../EDF/EDF.h"
 
 #include "ua.h"
 
@@ -57,17 +57,17 @@ CmdInput *CmdInputLoop(int iMenuStatus, CmdInput *pInput, byte *pcInput, byte **
    return m_szClientName;
 } */
 
-char *CLIENT_SUFFIX()
+const char *CLIENT_SUFFIX()
 {
    return "d";
 }
 
-char *CLIENT_PLATFORM()
+const char *CLIENT_PLATFORM()
 {
    return "";
 }
 
-int CmdStartupEnv(unsigned char *szEnv, int iEnvPos, int iType, char *szName)
+int CmdStartupEnv(unsigned char *szEnv, int iEnvPos, int iType, const char *szName)
 {
    szEnv[iEnvPos++] = iType;
    memcpy(szEnv + iEnvPos, szName, strlen(szName));
@@ -227,7 +227,7 @@ bool CmdLocal()
    return false;
 }
 
-char *CmdUsername()
+const char *CmdUsername()
 {
    debug(DEBUGLEVEL_DEBUG, "CmdUsername '%s'\n", g_szEnvUser);
 
@@ -586,7 +586,7 @@ bool CmdBrowse(const char *szURI)
    return false;
 }
 
-char CmdDirSep()
+const char CmdDirSep()
 {
    return '/';
 }

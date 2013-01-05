@@ -6,13 +6,13 @@
 #ifndef _USEFUL_H_
 #define _USEFUL_H_
 
-typedef unsigned char byte;
+#include "../gryntypes.h"
 #ifdef FREEBSD
 #define bool int
 #endif
 
-#include "useful/StackTrace.h"
-#include "useful/LeakTrace.h"
+#include "StackTrace.h"
+#include "LeakTrace.h"
 
 #ifdef UNIX
 #include <strings.h>
@@ -33,7 +33,7 @@ public:
    byte Char(int iPos);
    long Length();
 
-   long Append(char *szValue);
+   long Append(const char *szValue);
    long Append(byte *pValue, int iValueLen);
    long Append(int iValue);
 

@@ -20,7 +20,7 @@
 #include <stdarg.h>
 #include <time.h>
 
-#include "Conn/EDFConn.h"
+#include "../EDF/EDF.h"
 
 #include "ua.h"
 
@@ -28,7 +28,7 @@
 #include "CmdInput.h"
 #include "CmdMenu.h"
 
-#include "client/CliUser.h"
+#include "../client/CliUser.h"
 
 #include "CmdShow.h"
 #include "CmdTable.h"
@@ -4052,7 +4052,7 @@ void CmdUserView(EDF *pReply)
    CmdWrite(szWrite);
    if(pReply->Child(CmdVersion("2.5") >= 0 ? "privilege" : "proxy") == true)
    {
-      CmdEDFPrint("Privileges", pReply, false, false);
+      //CmdEDFPrint("Privileges", pReply, false, false);
       CmdWrite("\n");
 
       pReply->Parent();
@@ -4671,7 +4671,7 @@ void CmdUserView(EDF *pReply)
 void CmdUserStats(EDF *pReply)
 {
    STACKTRACE
-   int iNumUsers = 0, iAccessLevel = LEVEL_NONE, iValue = 0, iDays = 0, iDate = 0, iMaxLogins = -1, iMaxLoginsDate = 0;
+   int iNumUsers = 0, iAccessLevel = LEVEL_NONE, iValue = 0, iDays = 0, iMaxLogins = -1, iMaxLoginsDate = 0;
    int iAll = 0, iAllTotal = 0, iAllAverage = 0;
    bool bRetro = false;
    // double dValue = 0;
@@ -5060,19 +5060,6 @@ bool CmdCentre(const char *szText, char cColour)
    return true;
 }
 
-void CmdBanner(EDF *pReply)
-{
-   STACKTRACE
-   char *szText = NULL;
-
-   pReply->GetChild("banner", &szText);
-
-   if(szText != NULL)
-   {
-      CmdCentre(szText);
-   }
-   CmdWrite("\n\n");
-}
 
 void CmdTaskList(EDF *pReply)
 {

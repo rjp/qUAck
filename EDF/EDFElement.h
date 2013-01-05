@@ -16,7 +16,7 @@
 #ifndef _EDFELEMENT_H_
 #define _EDFELEMENT_H_
 
-#include "useful/useful.h"
+#include "../useful/useful.h"
 
 #define NEWCOPY(pDest, pSrc, lLen, tDest, tSrc) \
 pDest = new tDest[lLen + 1];\
