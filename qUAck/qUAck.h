@@ -16,9 +16,10 @@
 #ifndef _QUACK_H_
 #define _QUACK_H_
 
-#include "EDF/EDF.h"
+#include "../EDF/EDF.h"
 
-#include "Conn/EDFConn.h"
+#include "../Conn/EDFConn.h"
+#include "grynlayer.h"
 
 #include "CmdInput.h"
 #include "CmdMenu.h"
@@ -49,17 +50,17 @@ extern EDF *m_pChannelList, *m_pUserList;
 extern EDF *m_pServiceList;
 extern EDF *m_pSystemList;
 
-extern EDFConn *m_pClient;
+extern GrynLayer *m_pGrynLayer;
 
-int BuildNum();
-char *BuildTime();
-char *BuildDate();
+const int BuildNum();
+const char *BuildTime();
+const char *BuildDate();
 
 // int CmdServerVersion(const char *szVersion);
 
-char *CLIENT_NAME();
-char *CLIENT_SUFFIX();
-char *CLIENT_PLATFORM();
+const char *CLIENT_NAME();
+const char *CLIENT_SUFFIX();
+const char *CLIENT_PLATFORM();
 
 void CmdStartup();
 void CmdShutdown(const char *szError = NULL, bool bDeleteLog = false, bool bSupressError = false);
@@ -78,9 +79,9 @@ byte CmdMenu(int iMenuStatus);
 
 bool CmdYesNo(const char *szTitle, bool bDefault);
 
-char *CmdLineStr(const char *szTitle, int iMax = -1, int iOptions = 0, const char *szInit = NULL, CMDTABFUNC pTabFunc = NULL, EDF *pTabData = NULL);
-char *CmdLineStr(const char *szTitle, const char *szExtra, int iMax = -1, int iOptions = 0, const char *szInit = NULL, CMDTABFUNC pTabFunc = NULL, EDF *pTabData = NULL);
-char *CmdLineStr(int iMenuStatus);
+const char *CmdLineStr(const char *szTitle, int iMax = -1, int iOptions = 0, const char *szInit = NULL, CMDTABFUNC pTabFunc = NULL, EDF *pTabData = NULL);
+const char *CmdLineStr(const char *szTitle, const char *szExtra, int iMax = -1, int iOptions = 0, const char *szInit = NULL, CMDTABFUNC pTabFunc = NULL, EDF *pTabData = NULL);
+const char *CmdLineStr(int iMenuStatus);
 int CmdLineTab(const char *szTitle, CMDTABFUNC pTabFunc, EDF *pData);
 int CmdLineUser(CMDTABFUNC pTabFunc = CmdUserTab, int iInitID = -1, char **szReturn = NULL, bool bValid = true, const char *szDefaultPrompt = NULL, const char *szInit = NULL);
 int CmdLineChannel();
@@ -100,9 +101,9 @@ int CmdPID();
 
 bool CmdOpen(const char *szFilename);
 
-char CmdDirSep();
+const char CmdDirSep();
 
-int CmdVersion(char *szVersion);
+int CmdVersion(const char *szVersion);
 
 char *CmdEditor();
 

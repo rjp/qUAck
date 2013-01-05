@@ -21,7 +21,7 @@
 #include <ctype.h>
 
 // UA headers
-#include "EDF/EDF.h"
+#include "../EDF/EDF.h"
 
 #include "CmdIO.h"
 #include "CmdInput.h"

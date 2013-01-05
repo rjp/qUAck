@@ -10,7 +10,7 @@
 #define _EDFCONN_H_
 
 #include "Conn.h"
-#include "EDF/EDF.h"
+#include "../EDF/EDF.h"
 
 class EDFConn : public Conn
 {

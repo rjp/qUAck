@@ -17,8 +17,8 @@
 #define _CLIFOLDER_H_
 
 // Folder functions
-int FolderGet(EDF *pData, char *&szFolderName, bool bReset = false);
-bool FolderGet(EDF *pData, int iFolderID, char **szFolderName = NULL, bool bReset = false);
+int FolderGetFromName(EDF *pData, const char *szFolderName, bool bReset = false);
+bool FolderGetFromId(EDF *pData, int iFolderID, char **szFolderName = NULL, bool bReset = false);
 
 // Message functions
 bool MessageInFolder(EDF *pData, int iMsgID);

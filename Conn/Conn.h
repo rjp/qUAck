@@ -25,7 +25,7 @@
 #include <openssl/ssl.h>
 #endif
 
-#include "useful/useful.h"
+#include "../useful/useful.h"
 
 #ifdef UNIX
 typedef int SOCKET;

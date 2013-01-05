@@ -18,7 +18,7 @@
 #include <ctype.h>
 #include <time.h>
 
-#include "EDF/EDF.h"
+#include "../EDF/EDF.h"
 
 #include "ua.h"
 #include "CliUser.h"
@@ -27,7 +27,7 @@
 // iUserID -         ID of the user to search for
 // iSearchType -     Flag for which search (0 = use szUserName, 1 = use iUserID)
 // bReset -          Flag for temporary position setting
-bool UserGet(EDF *pData, int *iUserID, char **szUserName, int iSearchType, bool bReset, long lDate)
+bool InternalUserGet(EDF *pData, int *iUserID, char **szUserName, int iSearchType, bool bReset, long lDate)
 {
 	STACKTRACE
    int iUserEDF = -1;
@@ -150,23 +150,23 @@ bool UserGet(EDF *pData, int *iUserID, char **szUserName, int iSearchType, bool 
 }
 
 // UserGet: Get user from name (convinence function)
-int UserGet(EDF *pData, char *&szUserName, bool bReset)
+int UserGetFromName(EDF *pData, const char *szUserName, bool bReset)
 {
 	STACKTRACE
    int iUserID = -1;
 
-   UserGet(pData, &iUserID, &szUserName, 0, bReset, -1);
+   InternalUserGet(pData, &iUserID, (char **) &szUserName, 0, bReset, -1);
 
    return iUserID;
 }
 
 // UserGet: Get user from ID (convinence function)
-bool UserGet(EDF *pData, int iUserID, char **szUserName, bool bReset, long lDate)
+bool UserGetFromId(EDF *pData, int iUserID, char **szUserName, bool bReset, long lDate)
 {
 	STACKTRACE
    bool bReturn = false;
 
-   bReturn = UserGet(pData, &iUserID, szUserName, 1, bReset, lDate);
+   bReturn = InternalUserGet(pData, &iUserID, szUserName, 1, bReset, lDate);
 
    return bReturn;
 }

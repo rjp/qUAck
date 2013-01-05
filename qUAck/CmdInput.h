@@ -54,7 +54,7 @@ class CmdInput
 public:
    // Line input
    CmdInput(CMDFIELDSFUNC pFieldsFunc = NULL, EDF *pData = NULL);
-   CmdInput(const char *szTitle, int iMax, int iOptions = 0, const char *szInit = NULL, CMDTABFUNC pTabFunc = NULL, EDF *pData = NULL);
+   CmdInput(const char *szTitle, int iMax, int iOptions = 0, const char *szInit = NULL); // SGD
    CmdInput(const char *szTitle, const char *szExtra, int iMax, int iOptions = 0, const char *szInit = NULL, CMDTABFUNC pTabFunc = NULL, EDF *pData = NULL);
    // Menu input
    CmdInput(int iOptions, const char *szTitle);
