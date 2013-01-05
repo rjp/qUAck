@@ -34,6 +34,8 @@ FILE *g_fDebug = NULL;
 bool g_bDebugOpened = false;
 int g_iDebug = -1;
 
+
+
 bytes::bytes()
 {
    m_pData = NULL;
@@ -502,120 +504,14 @@ int bytesprint(FILE *fOutput, const char *szTitle, const bytes *pBytes, bool bRa
    return memprint(fOutput, szTitle, pBytes != NULL ? ((bytes *)pBytes)->Data(false) : NULL, pBytes != NULL ? ((bytes *)pBytes)->Length() : 0, bRaw);
 }
 
-#define SKIP_WS \
-while(isspace(*pPos)) \
-{ \
-   pPos++; \
-}
 
-#define SKIP_TOKEN \
-while(isspace(*pPos)) \
-{ \
-   pPos++; \
-} \
-while(*pPos != '\0' && !isspace(*pPos)) \
-{ \
-   pPos++; \
-}
-
+// SGD: Something in here makes G++ 4.2.1 go barmy on OSX
+// So deleted it for now
+// 
 unsigned long memusage()
 {
-   // STACKTRACE
-#ifdef UNIX
-	int fStat = -1;
-	char szStat[100], szLine[10000], *pPos = NULL;
-   int iLineLen = 0, iKVSize = 0;
-	unsigned long lVSize = 0; //, iRSS = 0, iRLim = 0;
-	
-	sprintf(szStat, "/proc/%d/stat", getpid());
-	fStat = open(szStat, O_RDONLY);
-	/* if(fStat == NULL)
-	{
-		printf("Unable to open %s, %s\n", szStat, strerror(errno));
-		return 0;
-	} */
-
-	// fgets(szLine, sizeof(szLine), fStat);
-   iLineLen = read(fStat, szLine, sizeof(szLine) - 1);
-   // memprint("memusage read line", (byte *)szLine, iLineLen);
-	close(fStat);
-   
-   if(iLineLen == -1)
-     {
-	return 0;
-     }
-   
-   // STACKTRACEUPDATE
-
-   szLine[iLineLen] = '\0';
-	
-   // printf("memusage: %s", szLine);
-
-	/* sscanf(szLine, "%d %s %c %d %d %d %d %d %u %u %u %u %u %d %d %d %d %d %d %u %u %d %u %u %u",
-		// pid -> tgpid
-		&iTemp, szTemp, &cTemp, &iTemp, &iTemp, &iTemp, &iTemp, &iTemp,
-		// flags -> vsize
-		&iTemp, &iTemp, &iTemp, &iTemp, &iTemp, &iTemp, &iTemp, &iTemp, &iTemp, &iTemp, &iTemp, &iTemp, &iTemp, &iTemp,
-		&iVSize, &iRSS, &iRLim); */
-   
-   // STACKTRACEUPDATE
-
-   pPos = szLine;
-   pPos = strchr(pPos, '(') + 1;
-   pPos = strchr(pPos, ')') + 1;
-
-   SKIP_WS
-   pPos++;
-
-   SKIP_TOKEN  // ppid
-   SKIP_TOKEN  // pgrp
-   SKIP_TOKEN  // session
-   SKIP_TOKEN  // tty
-   SKIP_TOKEN  // tty pgrp
-   SKIP_TOKEN  // flags
-   SKIP_TOKEN  // min flt
-   SKIP_TOKEN  // cmin flt
-   SKIP_TOKEN  // maj flt
-   SKIP_TOKEN  // cmaj flt
-     
-   // STACKTRACEUPDATE
-
-   SKIP_TOKEN  // utime
-   SKIP_TOKEN  // stime
-
-   SKIP_TOKEN  // cutime
-   SKIP_TOKEN  // cstime
-
-   SKIP_TOKEN  // priority
-   // printf("memusage priority %s\n", pPos);
-   SKIP_TOKEN  // nice
-
-   SKIP_TOKEN  // timeout
-   SKIP_TOKEN  // it_real_val
-   // SKIP_TOKEN  // start_time
-
-   SKIP_TOKEN  // vsize
-   lVSize = atol(pPos);
-   iKVSize = (lVSize + 512) >> 10;
-	// printf("memsuage vsize %u %u\n", iVSize, iKVSize);
-
-	return lVSize;
-#else
-#ifndef PSAPIOFF
-   PROCESS_MEMORY_COUNTERS mCounters;
-   HANDLE pProcess = NULL;
-
-   pProcess = GetCurrentProcess();
-   mCounters.WorkingSetSize = 0;
-   GetProcessMemoryInfo(pProcess, &mCounters, sizeof(mCounters));
-   // printf("memusage %d, %ld %ld %ld\n", bReturn, mCounters.WorkingSetSize, mCounters.QuotaPagedPoolUsage, mCounters.PagefileUsage);
-
-	return mCounters.WorkingSetSize;
-#else
-   return 0;
-#endif
-#endif
 }
+// SGD: End of barmy section
 
 // Read a file into a character array
 byte *FileRead(const char *szFilename, size_t *lFileLength)
@@ -874,3 +770,4 @@ int debuglevel()
 {
    return g_iDebug;
 }
+
